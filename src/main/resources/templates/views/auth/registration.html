@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en"
+      th:replace="~{fragments/base :: base_layout(~{::title}, ~{::section},~{})}"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>Регистрация</title>
+</head>
+<body>
+<section>
+  <div class="text-center my-4">
+    <div class="w-100 m-auto p-1" style="max-width: 330px;">
+      <div th:if="${error != null}" th:text="${error}">Registration error</div>
+      <form th:action="@{/registration}" method="post" th:object="${user}">
+        <h1 class="h3 mb-3 fw-normal">Пожалуйста, войдите</h1>
+        <div class="form-floating">
+          <input type="text" class="form-control" th:field="*{fio}" id="fio" placeholder="Login">
+          <label for="login">ФИО</label>
+          <div th:if="${#fields.hasErrors('fio')}" th:errors="*{fio}">Fio error</div>
+        </div>
+        <div class="form-floating my-2">
+          <input type="text" class="form-control" th:field="*{login}" id="login" placeholder="Login">
+          <label for="login">Логин</label>
+          <div th:if="${#fields.hasErrors('login')}" th:errors="*{login}">Login error</div>
+        </div>
+        <div class="form-floating my-2">
+          <input type="password" class="form-control" th:field="*{password}" id="password" placeholder="Password">
+          <label for="password">Пароль</label>
+          <div th:if="${#fields.hasErrors('password')}" th:errors="*{password}">Password error</div>
+        </div>
+        <button class="w-100 btn btn-lg btn-primary" type="submit">Войти</button>
+      </form>
+    </div>
+  </div>
+</section>
+</body>
+</html>
