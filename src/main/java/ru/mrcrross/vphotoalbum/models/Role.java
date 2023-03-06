@@ -1,13 +1,20 @@
 package ru.mrcrross.vphotoalbum.models;
 
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.Size;
+import org.hibernate.validator.constraints.Length;
+
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 public class Role implements Serializable {
     private int id;
+    @NotEmpty(message = "Техническое название должно быть заполнено")
     private String techName;
+    @NotEmpty(message = "Название должно быть заполнено")
     private String name;
-    private List<Permission> params;
+    private ArrayList<Integer> params;
 
     public int getId() {
         return id;
@@ -33,11 +40,11 @@ public class Role implements Serializable {
         this.name = name;
     }
 
-    public void setParams(List<Permission> params) {
+    public void setParams(ArrayList<Integer> params) {
         this.params = params;
     }
 
-    public List<Permission> getParams() {
+    public ArrayList<Integer> getParams() {
         return params;
     }
 }

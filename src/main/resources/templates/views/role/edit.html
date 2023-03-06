@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html   lang="en"
+        th:replace="~{fragments/base :: base_layout(~{::title}, ~{::section},~{})}"
+        xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>Редактирование роли</title>
+</head>
+<body>
+<section>
+  <div th:replace="~{fragments/submenu :: subMenu('Роли', 'role')}"></div>
+  <div class="container d-flex flex-column justify-content-center align-items-center">
+    <h1 class="h1 m-2" th:text="'Редактирование роли ' + ${role.getName()}">Редактирование роли</h1>
+    <form th:action="@{/role/{id}/edit(id = ${role.getId()})}" method="post" th:object="${role}">
+      <div class="form-floating mb-2">
+        <input type="text" class="form-control" th:field="*{techName}" th:value="${role.getTechName()}" id="techName" placeholder="Техническое названия">
+        <label for="techName">Техническое названия</label>
+        <div th:if="${#fields.hasErrors('techName')}" th:errors="*{techName}">techName error</div>
+      </div>
+      <div class="form-floating mb-2">
+        <input type="text" class="form-control" th:field="*{name}" th:value="${role.getName()}" id="name" placeholder="Название">
+        <label for="name">Название</label>
+        <div th:if="${#fields.hasErrors('name')}" th:errors="*{name}">name error</div>
+      </div>
+      <h3 class="h3 mb-2">Права доступа</h3>
+      <div th:if="${#fields.hasErrors('params')}" th:errors="${role.params}">name error</div>
+      <div class="form-check form-switch mb-2" th:each="permission : ${params}">
+        <input class="form-check-input" th:field="${role.params}" th:value="${permission.getId()}" th:checked="${role.params.indexOf(permission.getId()) != -1 ? 'checked' : ''}" type="checkbox" th:id="'param' + ${permission.getId()}">
+        <label class="form-check-label" th:for="'param' + ${permission.getId()}" th:text="${permission.getName()}" th:alt="${permission.getTechName()}" th:title="${permission.getTechName()}"></label>
+      </div>
+      <button class="w-100 btn btn-lg btn-primary" type="submit">Сохранить</button>
+    </form>
+  </div>
+</section>
+</body>
+</html>

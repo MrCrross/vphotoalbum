@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html   lang="en"
+        th:replace="~{fragments/base :: base_layout(~{::title}, ~{::section},~{})}"
+        xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>Роль</title>
+</head>
+<body>
+<section>
+  <div th:replace="~{fragments/submenu :: subMenu('Роли', 'role')}"></div>
+  <div class="d-flex flex-column mt-3">
+    <div class="d-flex flex-row border">
+      <div class="col-1 p-2 border-end fw-bold">ID</div>
+      <div class="col-2 p-2 border-end fw-bold">Техническое названия</div>
+      <div class="col-3 p-2 border-end fw-bold">Название</div>
+      <div class="col-3 p-2 border-end fw-bold">Права доступа</div>
+      <div class="col-3 p-2 fw-bold">Действия</div>
+    </div>
+    <div class="d-flex flex-column">
+      <div class="d-flex flex-row border" th:object="${role}">
+        <div class="col-1 p-2 border-end fw-bold" th:text="${role.getId()}">ID</div>
+        <div class="col-2 p-2 border-end" th:text="${role.getTechName()}">Техническое названия</div>
+        <div class="col-3 p-2 border-end" th:text="${role.getName()}">Название</div>
+        <div class="col-3 p-2 border-end">
+          <ul class="list-group">
+            <li class="list-group-item my-2" th:each="permission : ${params}">
+              <a class="text-decoration-none" th:href="@{/param/{id}(id = ${permission.getId()})}" th:text="${permission.getName()}"></a>
+            </li>
+          </ul>
+        </div>
+        <div class="col-3 p-2">
+          <a class="btn btn-primary" th:href="@{/role/{id}/edit(id = ${role.getId()})}">Изменить</a>
+          <a class="btn btn-danger" th:href="@{/role/{id}/delete(id = ${role.getId()})}">Удалить</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+</body>
+</html>

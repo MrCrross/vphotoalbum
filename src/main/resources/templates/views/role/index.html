@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html   lang="en"
+        th:replace="~{fragments/base :: base_layout(~{::title}, ~{::section},~{})}"
+        xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>Роли</title>
+</head>
+<body>
+<section>
+  <div th:replace="~{fragments/submenu :: subMenu('Роли', 'role')}"></div>
+  <div class="d-flex flex-column mt-3">
+    <div class="d-flex flex-row border">
+      <div class="col-1 p-2 border-end fw-bold">ID</div>
+      <div class="col-3 p-2 border-end fw-bold">Техническое названия</div>
+      <div class="col-4 p-2 border-end fw-bold">Название</div>
+      <div class="col-4 p-2 fw-bold">Действия</div>
+    </div>
+    <div class="d-flex flex-column">
+      <div class="d-flex flex-row border cursor-pointer" th:if="${roles.size() != 0}" th:each="role : ${roles}" th:attr="data-href=@{/role/{id}(id = ${role.getId()})}">
+        <div class="col-1 p-2 border-end fw-bold" th:text="${role.getId()}">ID</div>
+        <div class="col-3 p-2 border-end" th:text="${role.getTechName()}">Техническое названия</div>
+        <div class="col-4 p-2 border-end" th:text="${role.getName()}">Название</div>
+        <div class="col-4 p-2">
+          <a class="btn btn-secondary" th:href="@{/role/{id}(id = ${role.getId()})}">Изучить</a>
+          <a class="btn btn-primary" th:href="@{/role/{id}/edit(id = ${role.getId()})}">Изменить</a>
+        </div>
+      </div>
+      <div th:if="${roles.size() == 0}">Ролей пока нет. <a class="text-success text-decoration-none" th:href="@{/role/add}">Добавьте!</a></div>
+    </div>
+  </div>
+</section>
+</body>
+</html>
