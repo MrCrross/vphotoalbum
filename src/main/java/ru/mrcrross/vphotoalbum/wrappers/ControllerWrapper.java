@@ -5,21 +5,17 @@ import ru.mrcrross.vphotoalbum.models.User;
 
 public class ControllerWrapper {
 
-    public String loginControl(HttpSession session) {
+    public boolean loginControl(HttpSession session) {
         User currentUser = (User) session.getAttribute("user");
-        if(currentUser == null)
-        {
-            return "redirect:/";
-        }
-        return "";
+        return currentUser != null;
     }
 
     public boolean paramsControl(HttpSession session, String techNameParam)
     {
-        User currentUser = (User) session.getAttribute("user");
-        if (currentUser.getParams().contains(techNameParam)) {
+        if (this.loginControl(session)) {
             return true;
         }
-        return false;
+        User currentUser = (User) session.getAttribute("user");
+        return !currentUser.getParams().contains(techNameParam);
     }
 }

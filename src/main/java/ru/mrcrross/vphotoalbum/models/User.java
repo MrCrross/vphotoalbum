@@ -7,6 +7,7 @@ import java.util.ArrayList;
 
 public class User implements Serializable {
     private int id = 0;
+    private String avatar;
     @NotEmpty(message = "Логин не должен быть пустым")
     private String login;
     @NotEmpty(message = "Пароль не должен быть пустым")
@@ -89,5 +90,13 @@ public class User implements Serializable {
 
     public ArrayList<String> getParams() {
         return params;
+    }
+
+    public String getAvatar() {
+        return avatar;
+    }
+
+    public void setAvatar(String avatar) {
+        this.avatar = avatar;
     }
 }

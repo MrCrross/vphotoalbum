@@ -1,6 +1,5 @@
 package ru.mrcrross.vphotoalbum.modules.roles.controllers;
 
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,10 +28,8 @@ public class RoleController extends ControllerWrapper {
     @GetMapping("")
     public String index(Model model, HttpSession session)
     {
-        String loginControl = this.loginControl(session);
-        if (!loginControl.equals("")) return loginControl;
-        if (!this.paramsControl(session, "role_viewer")) {
-            return loginControl;
+        if (this.paramsControl(session, "role_viewer")) {
+            return "redirect:/";
         }
         model.addAttribute("roles", roleService.getAll());
         return "views/role/index";
@@ -41,10 +38,8 @@ public class RoleController extends ControllerWrapper {
     @GetMapping("{id}")
     public String show(@PathVariable("id") int id, Model model, HttpSession session)
     {
-        String loginControl = this.loginControl(session);
-        if (!loginControl.equals("")) return loginControl;
-        if (!this.paramsControl(session, "role_viewer")) {
-            return loginControl;
+        if (this.paramsControl(session, "role_viewer")) {
+            return "redirect:/";
         }
         Role role = roleService.getOne(id);
         model.addAttribute("role", role);
@@ -55,10 +50,8 @@ public class RoleController extends ControllerWrapper {
     @GetMapping("add")
     public String add(@RequestParam(value = "success", required = false) String success, Model model, HttpSession session)
     {
-        String loginControl = this.loginControl(session);
-        if (!loginControl.equals("")) return loginControl;
-        if (!this.paramsControl(session, "role_changed")) {
-            return loginControl;
+        if (this.paramsControl(session, "role_changed")) {
+            return "redirect:/";
         }
         model.addAttribute("role", new Role());
         model.addAttribute("params", permissionService.getAll());
@@ -71,10 +64,8 @@ public class RoleController extends ControllerWrapper {
     @GetMapping("{id}/edit")
     public String edit(@RequestParam(value = "success", required = false) String success, @PathVariable("id") int id, Model model, HttpSession session)
     {
-        String loginControl = this.loginControl(session);
-        if (!loginControl.equals("")) return loginControl;
-        if (!this.paramsControl(session, "role_changed")) {
-            return loginControl;
+        if (this.paramsControl(session, "role_changed")) {
+            return "redirect:/";
         }
         model.addAttribute("role", roleService.getOne(id));
         model.addAttribute("params", permissionService.getAll());
@@ -87,10 +78,8 @@ public class RoleController extends ControllerWrapper {
     @PostMapping("")
     public String insert(@ModelAttribute("role") @Valid Role role, BindingResult result, Model model, HttpSession session)
     {
-        String loginControl = this.loginControl(session);
-        if (!loginControl.equals("")) return loginControl;
-        if (!this.paramsControl(session, "role_changed")) {
-            return loginControl;
+        if (this.paramsControl(session, "role_changed")) {
+            return "redirect:/";
         }
         model.addAttribute("params", permissionService.getAll());
         if (result.hasErrors()) {
@@ -104,10 +93,8 @@ public class RoleController extends ControllerWrapper {
     @PostMapping("{id}")
     public String update(@PathVariable("id") int id, @ModelAttribute("role") @Valid Role role, BindingResult result, Model model, HttpSession session)
     {
-        String loginControl = this.loginControl(session);
-        if (!loginControl.equals("")) return loginControl;
-        if (!this.paramsControl(session, "role_changed")) {
-            return loginControl;
+        if (this.paramsControl(session, "role_changed")) {
+            return "redirect:/";
         }
         model.addAttribute("params", permissionService.getAll());
         if (result.hasErrors()) {
@@ -120,10 +107,8 @@ public class RoleController extends ControllerWrapper {
     @GetMapping("{id}/delete")
     public String delete(@PathVariable("id") int id, HttpSession session)
     {
-        String loginControl = this.loginControl(session);
-        if (!loginControl.equals("")) return loginControl;
-        if (!this.paramsControl(session, "role_deleted")) {
-            return loginControl;
+        if (this.paramsControl(session, "role_deleted")) {
+            return "redirect:/";
         }
         roleService.delete(id);
         return "redirect:/role";

@@ -13,8 +13,7 @@ public class UserAccountController extends ControllerWrapper {
     @GetMapping("/")
     public String account(HttpSession session)
     {
-        String loginControl = this.loginControl(session);
-        if (!loginControl.equals("")) return loginControl;
+        if (this.loginControl(session)) return "redirect:/";
         return "views/user/account";
     }
 }
