@@ -17,12 +17,8 @@ public class ControllerWrapper {
     public boolean paramsControl(HttpSession session, String techNameParam)
     {
         User currentUser = (User) session.getAttribute("user");
-        for (String param : currentUser.getParams())
-        {
-            if (param.equals(techNameParam))
-            {
-                return true;
-            }
+        if (currentUser.getParams().contains(techNameParam)) {
+            return true;
         }
         return false;
     }

@@ -37,12 +37,18 @@ public class RoleService {
 
     public void add(Role role)
     {
-        roleRepository.add(role);
+        int id = roleRepository.add(role);
+        roleRepository.updateParams(id, role.getParams());
     }
 
     public void update(int id, Role role)
     {
         roleRepository.update(id, role);
         roleRepository.updateParams(id, role.getParams());
+    }
+
+    public void delete(int id)
+    {
+        roleRepository.delete(id);
     }
 }

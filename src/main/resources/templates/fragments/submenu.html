@@ -13,7 +13,7 @@
     </div>
     <div>
       <a class="btn btn-secondary" th:href="@{/{module}(module = ${moduleLink})}">Список</a>
-      <a class="btn btn-success" th:href="@{/{module}/add(module = ${moduleLink})}">Добавить</a>
+      <a class="btn btn-success" th:if="${session.user.params.contains(moduleLink + '_changed')}" th:href="@{/{module}/add(module = ${moduleLink})}">Добавить</a>
     </div>
   </div>
 </div>

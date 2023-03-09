@@ -22,10 +22,10 @@
         <div class="col-4 p-2 border-end" th:text="${role.getName()}">Название</div>
         <div class="col-4 p-2">
           <a class="btn btn-secondary" th:href="@{/role/{id}(id = ${role.getId()})}">Изучить</a>
-          <a class="btn btn-primary" th:href="@{/role/{id}/edit(id = ${role.getId()})}">Изменить</a>
+          <a class="btn btn-primary" th:if="${session.user.params.contains('role_changed')}" th:href="@{/role/{id}/edit(id = ${role.getId()})}">Изменить</a>
         </div>
       </div>
-      <div th:if="${roles.size() == 0}">Ролей пока нет. <a class="text-success text-decoration-none" th:href="@{/role/add}">Добавьте!</a></div>
+      <div th:if="${roles.size() == 0}">Ролей пока нет. <a th:if="${session.user.params.contains('role_changed')}" class="text-success text-decoration-none" th:href="@{/role/add}">Добавьте!</a></div>
     </div>
   </div>
 </section>

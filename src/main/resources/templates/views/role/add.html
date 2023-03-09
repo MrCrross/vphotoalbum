@@ -10,6 +10,7 @@
     <div th:replace="~{fragments/submenu :: subMenu('Роли', 'role')}"></div>
     <div class="container d-flex flex-column justify-content-center align-items-center">
         <h1 class="h1 m-2">Добавление роли</h1>
+        <div th:if="${success != null}" th:text="${success}">Role added</div>
         <form th:action="@{/role}" method="post" th:object="${role}">
             <div class="form-floating mb-2">
                 <input type="text" class="form-control" th:field="*{techName}" id="techName" placeholder="Техническое названия">

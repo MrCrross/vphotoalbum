@@ -53,12 +53,14 @@ public class RoleRepository extends MainWrapper {
                 "WHERE urp.role_id = ?",new Object[]{id}, new PermissionMapper());
     }
 
-    public void add(Role role)
+    public int add(Role role)
     {
-        jdbcInsert.withTableName("user_roles").usingGeneratedKeyColumns("id");
-        MapSqlParameterSource params = new MapSqlParameterSource()
+        jdbcInsert.withTableName("users_roles").usingGeneratedKeyColumns("id");
+        MapSqlParameterSource roles = new MapSqlParameterSource()
                 .addValue("tech_name", role.getTechName())
                 .addValue("name", role.getName());
+        Number id = jdbcInsert.executeAndReturnKey(roles);
+        return id.intValue();
     }
 
     public void update(int id, Role role)
@@ -69,16 +71,24 @@ public class RoleRepository extends MainWrapper {
     public void updateParams(int id, ArrayList<Integer> params)
     {
         db.update("DELETE FROM users_roles_params WHERE role_id = ?", id);
-        StringBuilder sqlBuilder = new StringBuilder();
-        sqlBuilder.append("INSERT INTO users_roles_params (role_id, param_id) VALUES ");
-        for ( int param : params) {
-            sqlBuilder.append("(");
-            sqlBuilder.append(id);
-            sqlBuilder.append(",");
-            sqlBuilder.append(param);
-            sqlBuilder.append("),");
+        if (params.size() != 0) {
+            StringBuilder sqlBuilder = new StringBuilder();
+            sqlBuilder.append("INSERT INTO users_roles_params (role_id, param_id) VALUES ");
+            for (int param : params) {
+                sqlBuilder.append("(");
+                sqlBuilder.append(id);
+                sqlBuilder.append(",");
+                sqlBuilder.append(param);
+                sqlBuilder.append("),");
+            }
+            String sql = sqlBuilder.substring(0, sqlBuilder.length() - 1);
+            db.update(sql);
         }
-        String sql = sqlBuilder.substring(0, sqlBuilder.length()-1);
-        db.update(sql);
+    }
+
+    public void delete(int id)
+    {
+        db.update("DELETE FROM users_roles_params WHERE role_id = ?", id);
+        db.update("DELETE FROM users_roles WHERE id = ?", id);
     }
 }

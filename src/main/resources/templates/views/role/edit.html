@@ -10,7 +10,8 @@
   <div th:replace="~{fragments/submenu :: subMenu('Роли', 'role')}"></div>
   <div class="container d-flex flex-column justify-content-center align-items-center">
     <h1 class="h1 m-2" th:text="'Редактирование роли ' + ${role.getName()}">Редактирование роли</h1>
-    <form th:action="@{/role/{id}/edit(id = ${role.getId()})}" method="post" th:object="${role}">
+    <div th:if="${success != null}" th:text="${success}">Role changed</div>
+    <form th:action="@{/role/{id}(id = ${role.getId()})}" method="post" th:object="${role}">
       <div class="form-floating mb-2">
         <input type="text" class="form-control" th:field="*{techName}" th:value="${role.getTechName()}" id="techName" placeholder="Техническое названия">
         <label for="techName">Техническое названия</label>
