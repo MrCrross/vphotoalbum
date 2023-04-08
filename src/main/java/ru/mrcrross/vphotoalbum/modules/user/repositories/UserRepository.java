@@ -5,6 +5,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.stereotype.Component;
 import ru.mrcrross.vphotoalbum.models.Role;
+import ru.mrcrross.vphotoalbum.modules.user.mappers.UserMapper;
 import ru.mrcrross.vphotoalbum.modules.user.mappers.UserParamsMapper;
 import ru.mrcrross.vphotoalbum.models.Permission;
 import ru.mrcrross.vphotoalbum.models.User;
@@ -25,10 +26,18 @@ public class UserRepository extends MainWrapper {
     {
         return db.query("" +
                 "SELECT " +
-                "id, login, fio, date_add " +
+                "id, avatar, login, fio, date_add " +
                 "FROM users " +
                 "WHERE id = ? AND date_delete IS NULL " +
                 "LIMIT 1", new Object[]{userID}, new AuthSessionMapper()).stream().findAny().orElse(null);
+    }
+
+    public List<User> getAll()
+    {
+        return db.query("" +
+                "SELECT " +
+                "id, avatar, login, fio, date_add, date_edit, date_delete " +
+                "FROM users ", new UserMapper());
     }
 
     public List<Permission> getUserParams(int userID)
@@ -55,6 +64,7 @@ public class UserRepository extends MainWrapper {
     {
         jdbcInsert.withTableName("users").usingGeneratedKeyColumns("id");
         MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("avatar", null)
                 .addValue("login", user.getLogin())
                 .addValue("password", user.getPassword())
                 .addValue("fio", user.getFio())

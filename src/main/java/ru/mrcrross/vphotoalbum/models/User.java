@@ -4,7 +4,6 @@ import jakarta.validation.constraints.NotEmpty;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-
 public class User implements Serializable {
     private int id = 0;
     private String avatar;

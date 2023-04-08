@@ -1,12 +1,9 @@
 package ru.mrcrross.vphotoalbum.models;
 
 import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.Size;
-import org.hibernate.validator.constraints.Length;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.List;
 
 public class Role implements Serializable {
     private int id;

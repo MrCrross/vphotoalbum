@@ -3,20 +3,22 @@
         th:replace="~{fragments/base :: base_layout(~{::title}, ~{::section},~{})}"
         xmlns:th="http://www.thymeleaf.org">
 <head>
-  <title>Редактирование роли</title>
+  <title>Редактирование пользователя</title>
 </head>
 <body>
 <section>
   <div th:replace="~{fragments/submenu :: subMenu('Пользователи', 'user')}"></div>
   <div class="container d-flex flex-column justify-content-center align-items-center">
-    <h1 class="h1 m-2" th:text="'Редактирование пользователя ' + ${user.getName()}">Редактирование пользователя</h1>
+    <h1 class="h1 m-2" th:text="'Редактирование пользователя ' + ${user.getLogin()}">Редактирование пользователя</h1>
     <div th:if="${success != null}" th:text="${success}">User changed</div>
     <form th:action="@{/user/{id}(id = ${user.getId()})}" method="post" th:object="${user}" enctype="multipart/form-data">
+      <div class="my-2 mx-auto" >
+        <img th:src="${user.getAvatar()}" width="120" height="120 " th:alt="${user.getFio()}">
+      </div>
       <div class="form-floating mb-2">
-        <img th:src="${user.getAvatar()}" alt="">
-        <input type="file" class="form-control" th:field="*{avatar}" id="avatar" placeholder="Аватар">
+        <input type="file" class="form-control" name="file" id="avatar" placeholder="Аватар">
         <label for="avatar">Аватар</label>
-        <div th:if="${#fields.hasErrors('avatar')}" th:errors="*{avatar}">avatar error</div>
+<!--        <div th:if="${#fields.hasErrors('avatar')}" th:errors="*{avatar}">avatar error</div>-->
       </div>
       <div class="form-floating mb-2">
         <input type="text" class="form-control" th:field="*{fio}" th:value="${user.getFio()}" id="fio" placeholder="ФИО">
@@ -36,7 +38,7 @@
       <h3 class="h3 mb-2">Роли</h3>
       <div th:if="${#fields.hasErrors('roles')}" th:errors="${user.roles}">roles error</div>
       <div class="form-check form-switch mb-2" th:each="role : ${roles}">
-        <input class="form-check-input" th:field="${user.roles}" th:value="${role.getId()}" th:checked="${user.roles.indexOf(role.getId()) != -1 ? 'checked' : ''}" type="checkbox" th:id="'role' + ${role.getId()}">
+        <input class="form-check-input" th:field="${user.roles}" th:value="${role.getTechName()}" th:checked="${user.roles.contains(role.getTechName()) != false ? 'checked' : ''}" type="checkbox" th:id="'role' + ${role.getId()}">
         <label class="form-check-label" th:for="'role' + ${role.getId()}" th:text="${role.getName()}" th:alt="${role.getTechName()}" th:title="${role.getTechName()}"></label>
       </div>
       <button class="w-100 btn btn-lg btn-primary" type="submit">Сохранить</button>

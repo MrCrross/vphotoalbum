@@ -7,7 +7,7 @@ public class ControllerWrapper {
 
     public boolean loginControl(HttpSession session) {
         User currentUser = (User) session.getAttribute("user");
-        return currentUser != null;
+        return currentUser == null;
     }
 
     public boolean paramsControl(HttpSession session, String techNameParam)

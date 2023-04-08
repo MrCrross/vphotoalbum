@@ -75,7 +75,7 @@ public class AuthService {
         return getUserSession(userID);
     }
 
-    public String passwordHashing(String password) {
+    public static String passwordHashing(String password) {
         MessageDigest digest = null;
         try {
             digest = MessageDigest.getInstance("SHA-256");

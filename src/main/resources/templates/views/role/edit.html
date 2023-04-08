@@ -25,7 +25,7 @@
       <h3 class="h3 mb-2">Права доступа</h3>
       <div th:if="${#fields.hasErrors('params')}" th:errors="${role.params}">name error</div>
       <div class="form-check form-switch mb-2" th:each="permission : ${params}">
-        <input class="form-check-input" th:field="${role.params}" th:value="${permission.getId()}" th:checked="${role.params.indexOf(permission.getId()) != -1 ? 'checked' : ''}" type="checkbox" th:id="'param' + ${permission.getId()}">
+        <input class="form-check-input" th:field="${role.params}" th:value="${permission.getId()}" th:checked="${role.params.contains(permission.getId()) != false ? 'checked' : ''}" type="checkbox" th:id="'param' + ${permission.getId()}">
         <label class="form-check-label" th:for="'param' + ${permission.getId()}" th:text="${permission.getName()}" th:alt="${permission.getTechName()}" th:title="${permission.getTechName()}"></label>
       </div>
       <button class="w-100 btn btn-lg btn-primary" type="submit">Сохранить</button>

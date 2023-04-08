@@ -86,7 +86,6 @@ public class RoleController extends ControllerWrapper {
             return "views/role/add";
         }
         roleService.add(role);
-        model.addAttribute("role", new Role());
         return "redirect:/role/add?success=1";
     }
 

@@ -10,6 +10,7 @@
     <link rel="stylesheet" th:href="@{/css/bootstrap-utilities.min.css}">
     <link rel="stylesheet" th:href="@{/css/burger.css}">
     <link rel="stylesheet" th:href="@{/css/main.css}">
+    <script src="https://kit.fontawesome.com/da0d6b89a6.js" crossorigin="anonymous"></script>
 </head>
 <body>
 <header>
@@ -50,8 +51,9 @@
                             </ul>
                         </li>
                         <li class="nav-item dropdown" th:if="${session.user != null}">
-                            <a class="nav-link dropdown-toggle" href="#" role="button" th:text="${session.user.fio}" data-bs-toggle="dropdown" aria-expanded="false">
-                                Dropdown
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <img th:src="@{${session.user.avatar}}" width="24" height="24" alt="${session.user.fio}">
+                                <span th:text="${session.user.fio}">fio</span>
                             </a>
                             <ul class="dropdown-menu">
                                 <li><a class="dropdown-item" th:href="@{/logout}">Выйти</a></li>
