@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html   lang="en"
+        th:replace="~{fragments/base :: base_layout(~{::title}, ~{::section},~{})}"
+        xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>Редактирование пользователя</title>
+</head>
+<body>
+<section>
+  <div th:replace="~{fragments/submenu :: subMenu('Пользователи', 'user')}"></div>
+  <div class="container d-flex flex-column justify-content-center align-items-center">
+    <h1 class="h1 m-2" th:text="'Редактирование пользователя ' + ${user.getLogin()}">Редактирование пользователя</h1>
+    <div th:if="${success != null}" th:text="${success}">User changed</div>
+    <div th:if="${error != null}" th:text="${error}">User added</div>
+    <form th:action="@{/user/{id}(id = ${user.getId()})}" method="post" th:object="${user}" enctype="multipart/form-data">
+      <div class="my-2 mx-auto" >
+        <img th:src="${user.getAvatar()}" width="120" height="120 " th:alt="${user.getFio()}">
+      </div>
+      <div class="form-floating mb-2">
+        <input type="file" class="form-control" name="file" id="avatar" placeholder="Аватар">
+        <label for="avatar">Аватар</label>
+      </div>
+      <div class="form-floating mb-2">
+        <input type="text" class="form-control" th:field="*{fio}" th:value="${user.getFio()}" id="fio" placeholder="ФИО">
+        <label for="fio">ФИО</label>
+        <div th:if="${#fields.hasErrors('fio')}" th:errors="*{fio}">fio error</div>
+      </div>
+      <div class="form-floating mb-2">
+        <input type="text" class="form-control" th:field="*{login}" th:value="${user.getLogin()}" id="login" placeholder="Логин">
+        <label for="login">Логин</label>
+        <div th:if="${#fields.hasErrors('login')}" th:errors="*{login}">login error</div>
+      </div>
+      <div class="form-floating mb-2">
+        <input type="password" class="form-control" th:field="*{password}" id="password" placeholder="Пароль">
+        <label for="password">Пароль</label>
+        <div th:if="${#fields.hasErrors('password')}" th:errors="*{password}">password error</div>
+      </div>
+      <h3 class="h3 mb-2">Роли</h3>
+      <div th:if="${#fields.hasErrors('roles')}" th:errors="${user.roles}">roles error</div>
+      <div class="form-check form-switch mb-2" th:each="role : ${roles}">
+        <input class="form-check-input" name="roles" th:value="${role.getId()}" th:checked="${user.roles.contains(role.getTechName()) ? 'true' : 'false'}" type="checkbox" th:id="'role' + ${role.getId()}">
+        <label class="form-check-label" th:for="'role' + ${role.getId()}" th:text="${role.getName()}" th:alt="${role.getTechName()}" th:title="${role.getTechName()}"></label>
+      </div>
+      <button class="w-100 btn btn-lg btn-primary" type="submit">Сохранить</button>
+    </form>
+  </div>
+</section>
+</body>
+</html>

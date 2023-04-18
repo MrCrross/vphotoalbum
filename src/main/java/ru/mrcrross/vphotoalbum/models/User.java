@@ -3,11 +3,10 @@ package ru.mrcrross.vphotoalbum.models;
 import jakarta.validation.constraints.NotEmpty;
 
 import java.io.Serializable;
-import java.util.List;
-
-
+import java.util.ArrayList;
 public class User implements Serializable {
     private int id = 0;
+    private String avatar = "/img/avatar.svg";
     @NotEmpty(message = "Логин не должен быть пустым")
     private String login;
     @NotEmpty(message = "Пароль не должен быть пустым")
@@ -17,8 +16,8 @@ public class User implements Serializable {
     private String dateAdd;
     private String dateEdit;
     private String dateDelete;
-    private List<Permission> params;
-    private List<Role> roles;
+    private ArrayList<String> params;
+    private ArrayList<String> roles;
 
     public int getId() {
         return id;
@@ -76,19 +75,27 @@ public class User implements Serializable {
         this.dateDelete = dateDelete;
     }
 
-    public List<Role> getRoles() {
+    public ArrayList<String> getRoles() {
         return roles;
     }
 
-    public void setRoles(List<Role> roles) {
+    public void setRoles(ArrayList<String> roles) {
         this.roles = roles;
     }
 
-    public void setParams(List<Permission> params) {
+    public void setParams(ArrayList<String> params) {
         this.params = params;
     }
 
-    public List<Permission> getParams() {
+    public ArrayList<String> getParams() {
         return params;
+    }
+
+    public String getAvatar() {
+        return avatar;
+    }
+
+    public void setAvatar(String avatar) {
+        this.avatar = avatar;
     }
 }

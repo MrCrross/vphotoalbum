@@ -1,0 +1,10 @@
+:root {
+    --blue-400-rgb: #9dabfb;
+}
+
+.bg-blue-400{
+    background-color: rgba(var(--blue-400-rgb));
+}
+.cursor-pointer{
+    cursor: pointer;
+}

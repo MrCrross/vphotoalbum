@@ -1,4 +1,4 @@
-package ru.mrcrross.vphotoalbum.modules.auth.repository;
+package ru.mrcrross.vphotoalbum.modules.auth.repositories;
 
 import org.springframework.core.env.Environment;
 import org.springframework.jdbc.core.JdbcTemplate;

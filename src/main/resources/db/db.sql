@@ -28,7 +28,7 @@ CREATE TABLE IF NOT EXISTS `users` (
   `login` varchar(255) NOT NULL,
   `password` varchar(255) NOT NULL,
   `fio` varchar(255) NOT NULL,
-  `avatar` varchar(255) NULL,
+  `avatar` varchar(255) DEFAULT '/img/avatar.svg' NOT NULL,
   `date_add` datetime NOT NULL,
   `date_edit` datetime,
   `date_delete` datetime

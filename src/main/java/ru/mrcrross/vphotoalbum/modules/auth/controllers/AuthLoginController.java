@@ -41,8 +41,15 @@ public class AuthLoginController {
             model.addAttribute("user", new User());
             return "views/auth/login";
         }
-        User sessionUser = authService.getUserSession(user.getLogin(), user.getPassword());
+        User sessionUser = authService.getUserSession(userId);
         session.setAttribute("user", sessionUser);
+        return "redirect:/";
+    }
+
+    @GetMapping("/logout")
+    public String logout(HttpSession session)
+    {
+        session.invalidate();
         return "redirect:/";
     }
 }

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en"
+      th:replace="~{fragments/base :: base_layout(~{::title}, ~{::section},~{})}"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Добавление роли</title>
+</head>
+<body>
+<section>
+    <div th:replace="~{fragments/submenu :: subMenu('Роли', 'role')}"></div>
+    <div class="container d-flex flex-column justify-content-center align-items-center">
+        <h1 class="h1 m-2">Добавление роли</h1>
+        <div th:if="${success != null}" th:text="${success}">Role added</div>
+        <form th:action="@{/role}" method="post" th:object="${role}">
+            <div class="form-floating mb-2">
+                <input type="text" class="form-control" th:field="*{techName}" id="techName" placeholder="Техническое названия">
+                <label for="techName">Техническое названия</label>
+                <div th:if="${#fields.hasErrors('techName')}" th:errors="*{techName}">techName error</div>
+            </div>
+            <div class="form-floating mb-2">
+                <input type="text" class="form-control" th:field="*{name}" id="name" placeholder="Название">
+                <label for="name">Название</label>
+                <div th:if="${#fields.hasErrors('name')}" th:errors="*{name}">name error</div>
+            </div>
+            <h3 class="h3 mb-2">Права доступа</h3>
+            <div th:if="${#fields.hasErrors('params')}" th:errors="${role.params}">name error</div>
+            <div class="form-check form-switch mb-2" th:each="permission : ${params}">
+                <input class="form-check-input" th:field="${role.params}" th:value="${permission.getId()}" type="checkbox" th:id="'param' + ${permission.getId()}">
+                <label class="form-check-label" th:for="'param' + ${permission.getId()}" th:text="${permission.getName()}" th:alt="${permission.getTechName()}" th:title="${permission.getTechName()}"></label>
+            </div>
+            <button class="w-100 btn btn-lg btn-primary" type="submit">Сохранить</button>
+        </form>
+    </div>
+</section>
+</body>
+</html>
