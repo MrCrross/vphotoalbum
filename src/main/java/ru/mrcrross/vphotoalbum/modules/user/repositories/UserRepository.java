@@ -11,12 +11,13 @@ import ru.mrcrross.vphotoalbum.models.Permission;
 import ru.mrcrross.vphotoalbum.models.User;
 import ru.mrcrross.vphotoalbum.modules.auth.mappers.AuthSessionMapper;
 import ru.mrcrross.vphotoalbum.modules.user.mappers.UserRolesMapper;
-import ru.mrcrross.vphotoalbum.wrappers.MainWrapper;
+import ru.mrcrross.vphotoalbum.wrappers.RepositoryWrapper;
 
 import java.util.List;
+import java.util.Map;
 
 @Component
-public class UserRepository extends MainWrapper {
+public class UserRepository extends RepositoryWrapper {
 
     public UserRepository(JdbcTemplate db, Environment env) {
         super(db, env);
@@ -40,7 +41,7 @@ public class UserRepository extends MainWrapper {
                 "FROM users ", new UserMapper());
     }
 
-    public List<Permission> getUserParams(int userID)
+    public List<Permission> getUserParamsForSession(int userID)
     {
         return db.query("" +
                 "SELECT users_params.tech_name " +
@@ -51,10 +52,19 @@ public class UserRepository extends MainWrapper {
                 "WHERE uur.user_id = ?",new Object[]{userID}, new UserParamsMapper());
     }
 
-    public List<Role> getUserRoles(int userID)
+    public List<Role> getUserRolesForSession(int userID)
     {
         return db.query("" +
                 "SELECT users_roles.tech_name " +
+                "FROM users_roles " +
+                "INNER JOIN users_users_roles uur on users_roles.id = uur.role_id " +
+                "WHERE uur.user_id = ?",new Object[]{userID}, new UserRolesMapper());
+    }
+
+    public List<Role> getUserRoles(int userID)
+    {
+        return db.query("" +
+                "SELECT users_roles.id, users_roles.tech_name, users_roles.name " +
                 "FROM users_roles " +
                 "INNER JOIN users_users_roles uur on users_roles.id = uur.role_id " +
                 "WHERE uur.user_id = ?",new Object[]{userID}, new UserRolesMapper());
@@ -64,7 +74,7 @@ public class UserRepository extends MainWrapper {
     {
         jdbcInsert.withTableName("users").usingGeneratedKeyColumns("id");
         MapSqlParameterSource params = new MapSqlParameterSource()
-                .addValue("avatar", null)
+                .addValue("avatar", user.getAvatar())
                 .addValue("login", user.getLogin())
                 .addValue("password", user.getPassword())
                 .addValue("fio", user.getFio())
@@ -79,14 +89,26 @@ public class UserRepository extends MainWrapper {
         {
             StringBuilder sqlBuilder = new StringBuilder();
             sqlBuilder.append("INSERT INTO users_users_roles (role_id, user_id) VALUES ");
-            for ( int role : roles) {
-                sqlBuilder.append("(");
-                sqlBuilder.append(role);
-                sqlBuilder.append(",");
-                sqlBuilder.append(userID);
-                sqlBuilder.append("),");
+            for (int role : roles) {
+                sqlBuilder.append("(").append(role).append(",").append(userID).append("),");
             }
             String sql = sqlBuilder.substring(0, sqlBuilder.length()-1);
+            db.update(sql);
+        }
+    }
+
+    public void deleteRolesUser(int userID, String roles)
+    {
+        if (!roles.isEmpty()) {
+            String sql = "DELETE FROM users_users_roles WHERE user_id = " + userID + " AND role_id IN (" + roles + ")";
+            db.update(sql);
+        }
+    }
+
+    public void update(int userID, List<Map.Entry<String, Object>> fields)
+    {
+        if (!fields.isEmpty()) {
+            String sql = updateSQLBuilder("users", "id", userID, fields);
             db.update(sql);
         }
     }

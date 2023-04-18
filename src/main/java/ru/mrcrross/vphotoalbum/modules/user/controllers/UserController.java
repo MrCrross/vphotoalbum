@@ -9,6 +9,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import ru.mrcrross.vphotoalbum.models.User;
+import ru.mrcrross.vphotoalbum.modules.auth.services.AuthService;
 import ru.mrcrross.vphotoalbum.modules.roles.services.RoleService;
 import ru.mrcrross.vphotoalbum.modules.user.services.UserAvatarService;
 import ru.mrcrross.vphotoalbum.modules.user.services.UserService;
@@ -16,8 +17,6 @@ import ru.mrcrross.vphotoalbum.wrappers.ControllerWrapper;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
 
 @Controller
 @RequestMapping(path = "/user")
@@ -25,14 +24,15 @@ public class UserController extends ControllerWrapper {
 
     private final UserService userService;
     private final RoleService roleService;
-    private final String UPLOAD_DIR = "/img/users/";
+    private final AuthService authService;
     private final UserAvatarService userAvatarService;
     private final String success = "Пользователь сохранен успешно";
 
     @Autowired
-    public UserController(UserService userService, RoleService roleService, UserAvatarService userAvatarService) {
+    public UserController(UserService userService, RoleService roleService, AuthService authService, UserAvatarService userAvatarService) {
         this.userService = userService;
         this.roleService = roleService;
+        this.authService = authService;
         this.userAvatarService = userAvatarService;
     }
 
@@ -121,7 +121,8 @@ public class UserController extends ControllerWrapper {
         }
         int id = userService.add(user, roles);
         if (!avatar.isEmpty()) {
-            userAvatarService.save(id, avatar);
+            user.setAvatar(userAvatarService.save(id, avatar));
+            userService.update(id, user);
         }
         return "redirect:/user/add?success=1";
     }
@@ -129,17 +130,47 @@ public class UserController extends ControllerWrapper {
     @PostMapping("{id}")
     public String update(
             @PathVariable("id") int id,
-            @RequestParam("avatar") MultipartFile avatar,
+            @RequestParam(value = "file", required = false) MultipartFile avatar,
+            @RequestParam(value = "roles", required = false) int[] roles,
             @ModelAttribute("user") @Valid User user,
             BindingResult result,
             Model model,
             HttpSession session
     ) {
-        return null;
+        if (this.paramsControl(session, "user_changed")) {
+            return "redirect:/";
+        }
+        if (result.hasFieldErrors("login") || result.hasFieldErrors("fio")) {
+            model.addAttribute("user", userService.get(id));
+            model.addAttribute("roles", roleService.getAll());
+            return "views/user/edit";
+        }
+        if (!avatar.isEmpty()) {
+            String checkExtensions = userAvatarService.validateExtension(avatar);
+            if (!checkExtensions.equals("")) {
+                return "redirect:/user/add?error=" + URLEncoder.encode(checkExtensions, StandardCharsets.UTF_8);
+            }
+        }
+        userService.update(id, user);
+        userService.updateRoles(id, roles);
+        if (!avatar.isEmpty()) {
+            user.setAvatar(userAvatarService.save(id, avatar));
+            userService.update(id, user);
+        }
+        User sessionUser = (User) session.getAttribute("user");
+        if (id == sessionUser.getId()) {
+            session.removeAttribute("user");
+            session.setAttribute("user", authService.getUserSession(id));
+        }
+        return "redirect:/user/" + id + "/edit?success=1";
     }
 
     @GetMapping("{id}/delete")
     public String delete(@PathVariable("id") int id, HttpSession session) {
-        return null;
+        if (this.paramsControl(session, "user_changed")) {
+            return "redirect:/";
+        }
+        userService.delete(id);
+        return "redirect:/user";
     }
 }

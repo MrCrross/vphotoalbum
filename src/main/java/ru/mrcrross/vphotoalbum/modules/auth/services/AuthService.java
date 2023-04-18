@@ -47,8 +47,8 @@ public class AuthService {
     public User getUserSession(int userID) {
         User user =userRepository.getByID(userID);
         if (user != null) {
-            List<Permission> params = userRepository.getUserParams(user.getId());
-            List<Role> roles = userRepository.getUserRoles(user.getId());
+            List<Permission> params = userRepository.getUserParamsForSession(user.getId());
+            List<Role> roles = userRepository.getUserRolesForSession(user.getId());
             ArrayList<String> arrayParams = new ArrayList<String>();
             ArrayList<String> arrayRoles = new ArrayList<String>();
             for (Permission param : params)
@@ -65,14 +65,14 @@ public class AuthService {
         return user;
     }
 
-    public User registration(User user) {
+    public int registration(User user) {
         String password = passwordHashing(user.getPassword());
         user.setPassword(password);
         user.setDateAdd(LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
         int userID = userRepository.registration(user);
         int roleID = roleRepository.getIDByTechName("default");
         userRepository.addRolesUser(userID, new int[]{roleID});
-        return getUserSession(userID);
+        return userID;
     }
 
     public static String passwordHashing(String password) {

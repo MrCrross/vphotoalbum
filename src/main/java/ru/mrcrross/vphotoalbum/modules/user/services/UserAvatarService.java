@@ -7,9 +7,9 @@ import ru.mrcrross.vphotoalbum.wrappers.FileWrapper;
 @Component
 public class UserAvatarService extends FileWrapper {
 
-    public void save(int id, MultipartFile avatar){
+    public String save(int id, MultipartFile avatar) {
         String fileName = "avatar_" + id;
-        String url = "img/users/" + id;
-        writeFile(url, fileName, avatar);
+        String url = "/img/users/" + id;
+        return writeFile(url, fileName, avatar);
     }
 }

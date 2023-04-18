@@ -13,24 +13,32 @@ import java.util.ArrayList;
 public class FileWrapper {
 
     private ArrayList<String> extensions;
-    private final Path root = Paths.get("src", "main", "resources", "static");
+    private final Path root = Paths.get("src/main/resources/static");
 
     public void setExtensions(ArrayList<String> extensions)
     {
         this.extensions = extensions;
     }
-    public void writeFile(String url, String fileName, MultipartFile multipartFile)
+    public String writeFile(String url, String fileName, MultipartFile multipartFile)
     {
+        Path dir = Paths.get(root + url);
         try {
-            Files.createDirectories(root.resolve(url));
+            if (!Files.exists(dir)) {
+                Files.createDirectories(dir);
+            }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+        String extension = getExtension(multipartFile, false);
+        String urlNewFile = url + "/" + fileName + extension;
+        Path newFile = Paths.get(root + urlNewFile);
         try {
-            Files.copy(multipartFile.getInputStream(), root.resolve(url + "/" + fileName + getExtension(multipartFile, false)));
+            Files.deleteIfExists(newFile);
+            Files.copy(multipartFile.getInputStream(), newFile);
         } catch (Exception e) {
             throw new RuntimeException("Could not store the file. Error: " + e.getMessage());
         }
+        return urlNewFile;
     }
 
     private void setDefaultExtensions() {

@@ -42,8 +42,8 @@ public class AuthRegistrationController {
             model.addAttribute("user", new User());
             return "views/auth/registration";
         }
-        User sessionUser = authService.registration(user);
-        session.setAttribute("user", sessionUser);
+        int userID = authService.registration(user);
+        session.setAttribute("user", authService.getUserSession(userID));
         return "redirect:/";
     }
 }
