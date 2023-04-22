@@ -20,7 +20,7 @@
         <div class="col-1 p-2 border-end fw-bold" th:text="${user.getId()}">ID</div>
         <div class="col-3 p-2 border-end">
           <div>
-            <img th:src="@{${user.getAvatar()}}" width="24" height="24" th:alt="${user.getFio()}">
+            <img th:src="@{${user.getAvatar()}}" class="rounded-circle" width="36" height="36" th:alt="${user.getFio()}">
             <span th:text="${user.getFio()}">ФИО</span>
           </div>
         </div>

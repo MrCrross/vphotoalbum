@@ -53,7 +53,7 @@
                         </li>
                         <li class="nav-item dropdown" th:if="${session.user != null}">
                             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                <img th:src="@{${session.user.avatar}}" width="24" height="24" alt="${session.user.fio}">
+                                <img th:src="@{${session.user.avatar}}" class="rounded-circle" width="36" height="36" alt="${session.user.fio}">
                                 <span th:text="${session.user.fio}">fio</span>
                             </a>
                             <ul class="dropdown-menu">
