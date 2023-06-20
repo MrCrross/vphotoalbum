@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en"
+      th:replace="~{fragments/base :: base_layout(~{::title}, ~{::section},~{::script})}"
+      xmlns:th="http://www.thymeleaf.org">>
+<head>
+    <title>Фотоальбомы</title>
+</head>
+<body>
+<section>
+    <div id="photos_card" class="card">
+        <div class="card-header">
+            <div class="d-flex flex-row align-items-center justify-content-between">
+                <h4 class="h4">
+                    Личные фотоальбомы
+                </h4>
+                <div class="">
+                    <button class="btn btn-primary me-2" id="openCreateAlbumModal" type="button">Добавить Альбом
+                    </button>
+                    <button class="btn btn-primary" id="openCreatePhotoModal" type="button">Добавить фотографию</button>
+                </div>
+            </div>
+            <nav aria-label="breadcrumb">
+                <ol id="breadcrumb" class="breadcrumb">
+                    <li class="breadcrumb-item"><a class="photo_link" data-id="0" type="button">Фотоальбомы</a></li>
+                </ol>
+            </nav>
+        </div>
+        <ul id="photos_tree" class="list-group list-group-flush">
+        </ul>
+    </div>
+
+    <div class="modal fade" id="createAlbumModal" tabindex="-1" aria-labelledby="createAlbumLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="createAlbumLabel">Добавление альбома</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="createAlbumForm">
+                        <div class="mb-3">
+                            <label for="albumName" class="form-label">Название альбома</label>
+                            <input type="text" class="form-control" name="name" id="albumName" placeholder="Название">
+                        </div>
+                        <div class="mb-3">
+                            <label for="albumParent" class="form-label">Родитель</label>
+                            <select class="form-select" name="parent_id" id="albumParent"></select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="albumDescription" class="form-label">Описание</label>
+                            <textarea class="form-control" name="description" id="albumDescription"
+                                      placeholder="Описание" cols="30"
+                                      rows="10"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                    <button id="createAlbumSubmit" type="button" class="btn btn-primary">Добавить</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="createPhotoModal" tabindex="-1" aria-labelledby="createPhotoLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="createPhotoLabel">Добавление фотографии</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="createPhotoForm" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <label for="photoFile" class="form-label">Фотография</label>
+                            <input type="file" class="form-control" name="file" id="photoFile" placeholder="Фотография" accept="image/*">
+                        </div>
+                        <div class="mb-3">
+                            <label for="photoName" class="form-label">Название</label>
+                            <input type="text" class="form-control" name="name" id="photoName" placeholder="Название">
+                        </div>
+                        <div class="mb-3">
+                            <label for="photoAlbum" class="form-label">Альбом</label>
+                            <select class="form-select" name="albumID" id="photoAlbum"></select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="photoDescription" class="form-label">Описание</label>
+                            <textarea class="form-control" name="description" id="photoDescription"
+                                      placeholder="Описание" cols="30"
+                                      rows="10"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                    <button id="createPhotoSubmit" type="button" class="btn btn-primary">Добавить</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div th:replace="~{fragments/toasters}"></div>
+</section>
+<script th:src="@{/js/photoActions.js}"></script>
+<script>
+    $('document').ready(() => {
+        $.ajax('/api/photo/tree', {
+            method: 'GET',
+            dataType: 'json',
+            success: (data) => {
+                updateBreadCrumb(data[0]);
+                updateTree(data[1]);
+            }
+        })
+    })
+</script>
+</body>
+</html>

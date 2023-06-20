@@ -8,13 +8,13 @@ import ru.mrcrross.vphotoalbum.mappers.PermissionMapper;
 import ru.mrcrross.vphotoalbum.models.Permission;
 import ru.mrcrross.vphotoalbum.models.Role;
 import ru.mrcrross.vphotoalbum.modules.roles.mappers.RoleMapper;
-import ru.mrcrross.vphotoalbum.wrappers.MainWrapper;
+import ru.mrcrross.vphotoalbum.wrappers.RepositoryWrapper;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Component
-public class RoleRepository extends MainWrapper {
+public class RoleRepository extends RepositoryWrapper {
     public RoleRepository(JdbcTemplate db, Environment env) {
         super(db, env);
     }

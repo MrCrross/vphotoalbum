@@ -31,6 +31,10 @@ public class UserService {
         return user;
     }
 
+    public List<Role> getRolesById(int id) {
+        return userRepository.getUserRoles(id);
+    }
+
     public List<User> getAll() {
         List<User> users = userRepository.getAll();
         for (User user :

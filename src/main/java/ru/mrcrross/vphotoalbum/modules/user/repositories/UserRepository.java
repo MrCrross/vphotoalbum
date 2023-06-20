@@ -18,7 +18,6 @@ import java.util.Map;
 
 @Component
 public class UserRepository extends RepositoryWrapper {
-
     public UserRepository(JdbcTemplate db, Environment env) {
         super(db, env);
     }
@@ -38,7 +37,8 @@ public class UserRepository extends RepositoryWrapper {
         return db.query("" +
                 "SELECT " +
                 "id, avatar, login, fio, date_add, date_edit, date_delete " +
-                "FROM users ", new UserMapper());
+                "FROM users " +
+                "WHERE date_delete IS NULL", new UserMapper());
     }
 
     public List<Permission> getUserParamsForSession(int userID)

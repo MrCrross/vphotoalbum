@@ -3,7 +3,7 @@
         th:replace="~{fragments/base :: base_layout(~{::title}, ~{::section},~{})}"
         xmlns:th="http://www.thymeleaf.org">
 <head>
-  <title>Роль</title>
+  <title>Пользователи</title>
 </head>
 <body>
 <section>
@@ -28,7 +28,7 @@
         <div class="col-3 p-2 border-end" th:text="${user.getLogin()}">Логин</div>
         <div class="col-3 p-2 border-end">
           <ul class="list-group">
-            <li class="list-group-item my-2" th:each="role : ${user.roles}">
+            <li class="list-group-item my-2" th:each="role : ${roles}">
               <a class="text-decoration-none" th:if="${session.user.params.contains('role_viewer')}" th:href="@{/role/{id}(id = ${role.getId()})}" th:text="${role.getName()}"></a>
               <span class="text-decoration-none" th:if="${!session.user.params.contains('role_viewer')}" th:text="${role.getName()}"></span>
             </li>

@@ -5,10 +5,10 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import ru.mrcrross.vphotoalbum.models.User;
 import ru.mrcrross.vphotoalbum.modules.auth.mappers.AuthLoginMapper;
-import ru.mrcrross.vphotoalbum.wrappers.MainWrapper;
+import ru.mrcrross.vphotoalbum.wrappers.RepositoryWrapper;
 
 @Component
-public class AuthRepository extends MainWrapper {
+public class AuthRepository extends RepositoryWrapper {
 
     public AuthRepository(JdbcTemplate db, Environment env) {
         super(db, env);

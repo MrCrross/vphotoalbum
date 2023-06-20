@@ -47,6 +47,7 @@
                             </a>
                             <ul class="dropdown-menu">
                                 <li><a class="dropdown-item" th:href="@{/account}">Личный кабинет</a></li>
+                                <li><a class="dropdown-item" th:href="@{/photo}">Личный фотоальбом</a></li>
                                 <li th:if="${session.user.params.contains('role_viewer')}"><a class="dropdown-item" th:href="@{/role}">Роли</a></li>
                                 <li th:if="${session.user.params.contains('user_viewer')}"><a class="dropdown-item" th:href="@{/user}">Пользователи</a></li>
                             </ul>
@@ -70,6 +71,7 @@
 
 </div>
 <footer></footer>
+<script th:src="@{/js/jquery3.7.0.min.js}"></script>
 <script th:src="@{/js/bootstrap.bundle.min.js}"></script>
 <script th:src="@{/js/main.js}"></script>
 <script th:replace="${scripts}"></script>

@@ -5,13 +5,13 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import ru.mrcrross.vphotoalbum.mappers.PermissionMapper;
 import ru.mrcrross.vphotoalbum.models.Permission;
-import ru.mrcrross.vphotoalbum.wrappers.MainWrapper;
+import ru.mrcrross.vphotoalbum.wrappers.RepositoryWrapper;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Component
-public class PermissionRepository extends MainWrapper {
+public class PermissionRepository extends RepositoryWrapper {
 
     public PermissionRepository(JdbcTemplate db, Environment env) {
         super(db, env);

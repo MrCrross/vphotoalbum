@@ -51,6 +51,7 @@ public class UserController extends ControllerWrapper {
             return "redirect:/";
         }
         model.addAttribute("user", userService.get(id));
+        model.addAttribute("roles", userService.getRolesById(id));
         return "views/user/show";
     }
 

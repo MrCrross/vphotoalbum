@@ -1,37 +1,37 @@
 CREATE SCHEMA IF NOT EXISTS vphotoalbum;
 
+use vphotoalbum;
+
 CREATE TABLE SPRING_SESSION (
-                                PRIMARY_ID CHAR(36) NOT NULL,
-                                SESSION_ID CHAR(36) NOT NULL,
-                                CREATION_TIME BIGINT NOT NULL,
-                                LAST_ACCESS_TIME BIGINT NOT NULL,
-                                MAX_INACTIVE_INTERVAL INT NOT NULL,
-                                EXPIRY_TIME BIGINT NOT NULL,
-                                PRINCIPAL_NAME VARCHAR(100),
-                                CONSTRAINT SPRING_SESSION_PK PRIMARY KEY (PRIMARY_ID)
+    PRIMARY_ID CHAR(36) NOT NULL,
+    SESSION_ID CHAR(36) NOT NULL UNIQUE,
+    CREATION_TIME BIGINT NOT NULL,
+    LAST_ACCESS_TIME BIGINT NOT NULL,
+    MAX_INACTIVE_INTERVAL INT NOT NULL,
+    EXPIRY_TIME BIGINT NOT NULL,
+    PRINCIPAL_NAME VARCHAR(100),
+    CONSTRAINT SPRING_SESSION_PK PRIMARY KEY (PRIMARY_ID),
+    INDEX (EXPIRY_TIME, PRINCIPAL_NAME)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
 
 CREATE TABLE SPRING_SESSION_ATTRIBUTES (
-                                           SESSION_PRIMARY_ID CHAR(36) NOT NULL,
-                                           ATTRIBUTE_NAME VARCHAR(200) NOT NULL,
-                                           ATTRIBUTE_BYTES BLOB NOT NULL,
-                                           CONSTRAINT SPRING_SESSION_ATTRIBUTES_PK PRIMARY KEY (SESSION_PRIMARY_ID, ATTRIBUTE_NAME),
-                                           CONSTRAINT SPRING_SESSION_ATTRIBUTES_FK FOREIGN KEY (SESSION_PRIMARY_ID) REFERENCES SPRING_SESSION(PRIMARY_ID) ON DELETE CASCADE
+   SESSION_PRIMARY_ID CHAR(36) NOT NULL,
+   ATTRIBUTE_NAME VARCHAR(200) NOT NULL,
+   ATTRIBUTE_BYTES BLOB NOT NULL,
+   CONSTRAINT SPRING_SESSION_ATTRIBUTES_PK PRIMARY KEY (SESSION_PRIMARY_ID, ATTRIBUTE_NAME),
+   CONSTRAINT SPRING_SESSION_ATTRIBUTES_FK FOREIGN KEY (SESSION_PRIMARY_ID) REFERENCES SPRING_SESSION(PRIMARY_ID) ON DELETE CASCADE
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;
-
-CREATE UNIQUE INDEX SPRING_SESSION_IX1 ON SPRING_SESSION (SESSION_ID);
-CREATE INDEX SPRING_SESSION_IX2 ON SPRING_SESSION (EXPIRY_TIME);
-CREATE INDEX SPRING_SESSION_IX3 ON SPRING_SESSION (PRINCIPAL_NAME);
 
 CREATE TABLE IF NOT EXISTS `users` (
   `id` int PRIMARY KEY NOT NULL AUTO_INCREMENT,
-  `login` varchar(255) NOT NULL,
+  `login` varchar(255) NOT NULL UNIQUE,
   `password` varchar(255) NOT NULL,
   `fio` varchar(255) NOT NULL,
   `avatar` varchar(255) DEFAULT '/img/avatar.svg' NOT NULL,
   `date_add` datetime NOT NULL,
   `date_edit` datetime,
-  `date_delete` datetime
+  `date_delete` datetime,
+    INDEX (`fio`)
 );
 
 CREATE TABLE IF NOT EXISTS `users_roles` (
@@ -49,13 +49,17 @@ CREATE TABLE IF NOT EXISTS `users_params` (
 CREATE TABLE IF NOT EXISTS `users_users_roles` (
   `role_id` int NOT NULL,
   `user_id` int NOT NULL,
-  PRIMARY KEY (`role_id`, `user_id`)
+  PRIMARY KEY (`role_id`, `user_id`),
+    FOREIGN KEY (`role_id`) REFERENCES `users_roles` (`id`),
+    FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
 );
 
 CREATE TABLE IF NOT EXISTS `users_roles_params` (
   `role_id` int NOT NULL,
   `param_id` int NOT NULL,
-  PRIMARY KEY (`role_id`, `param_id`)
+  PRIMARY KEY (`role_id`, `param_id`),
+    FOREIGN KEY (`role_id`) REFERENCES `users_roles` (`id`),
+    FOREIGN KEY (`param_id`) REFERENCES `users_params` (`id`)
 );
 
 CREATE TABLE IF NOT EXISTS `history_users` (
@@ -63,42 +67,52 @@ CREATE TABLE IF NOT EXISTS `history_users` (
   `user_id` int NOT NULL,
   `item_id` int NOT NULL,
   `message` text NOT NULL,
-  `date_add` datetime NOT NULL
+  `date_add` datetime NOT NULL,
+  FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),
+    FOREIGN KEY (`item_id`) REFERENCES `users` (`id`)
 );
 
 CREATE TABLE IF NOT EXISTS `photos_albums` (
   `id` int PRIMARY KEY NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) NOT NULL,
-  `description` text NOT NULL,
+  `name` varchar(255) NOT NULL UNIQUE,
+  `description` text NULL,
   `parent_id` int,
   `owner_id` int NOT NULL,
   `date_add` datetime NOT NULL,
   `date_edit` datetime,
-  `date_delete` datetime
+  `date_delete` datetime,
+    FOREIGN KEY (`parent_id`) REFERENCES `photos_albums` (`id`),
+    FOREIGN KEY (`owner_id`) REFERENCES `users` (`id`)
 );
 
 CREATE TABLE IF NOT EXISTS `photos` (
   `id` int PRIMARY KEY NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) NOT NULL,
+  `name` varchar(255) NOT NULL UNIQUE,
   `path` varchar(255) NOT NULL,
-  `description` text NOT NULL,
+  `description` text NULL,
   `album_id` int,
   `owner_id` int NOT NULL,
   `date_add` datetime NOT NULL,
   `date_edit` datetime,
-  `date_delete` datetime
+  `date_delete` datetime,
+    FOREIGN KEY (`album_id`) REFERENCES `photos_albums` (`id`),
+    FOREIGN KEY (`owner_id`) REFERENCES `users` (`id`)
 );
 
 CREATE TABLE IF NOT EXISTS `photos_albums_viewers` (
   `album_id` int NOT NULL,
   `user_id` int NOT NULL,
-  PRIMARY KEY (`user_id`, `album_id`)
+  PRIMARY KEY (`user_id`, `album_id`),
+    FOREIGN KEY (`album_id`) REFERENCES `photos_albums` (`id`),
+    FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
 );
 
 CREATE TABLE IF NOT EXISTS `photos_viewers` (
   `photo_id` int NOT NULL,
   `user_id` int NOT NULL,
-  PRIMARY KEY (`user_id`, `photo_id`)
+  PRIMARY KEY (`user_id`, `photo_id`),
+    FOREIGN KEY (`photo_id`) REFERENCES `photos` (`id`),
+    FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
 );
 
 CREATE TABLE IF NOT EXISTS `history_photos` (
@@ -106,7 +120,9 @@ CREATE TABLE IF NOT EXISTS `history_photos` (
   `user_id` int NOT NULL,
   `item_id` int NOT NULL,
   `message` text NOT NULL,
-  `date_add` datetime NOT NULL
+  `date_add` datetime NOT NULL,
+  FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),
+    FOREIGN KEY (`item_id`) REFERENCES `photos` (`id`)
 );
 
 CREATE TABLE IF NOT EXISTS `history_photos_albums` (
@@ -114,7 +130,9 @@ CREATE TABLE IF NOT EXISTS `history_photos_albums` (
   `user_id` int NOT NULL,
   `item_id` int NOT NULL,
   `message` text NOT NULL,
-  `date_add` datetime NOT NULL
+  `date_add` datetime NOT NULL,
+  FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),
+    FOREIGN KEY (`item_id`) REFERENCES `photos_albums` (`id`)
 );
 
 CREATE TABLE IF NOT EXISTS `photos_comments` (
@@ -122,53 +140,7 @@ CREATE TABLE IF NOT EXISTS `photos_comments` (
   `who_add` int NOT NULL,
   `photo_id` int NOT NULL,
   `comment` text NOT NULL,
-  `date_add` datetime NOT NULL
+  `date_add` datetime NOT NULL,
+  FOREIGN KEY (`who_add`) REFERENCES `users` (`id`),
+    FOREIGN KEY (`photo_id`) REFERENCES `photos` (`id`)
 );
-
-CREATE INDEX `users_index_0` ON `users` (`login`);
-
-CREATE INDEX `users_index_1` ON `users` (`fio`);
-
-CREATE INDEX `photos_albums_index_2` ON `photos_albums` (`name`);
-
-CREATE INDEX `photos_index_3` ON `photos` (`name`);
-
-ALTER TABLE `users_users_roles` ADD FOREIGN KEY (`role_id`) REFERENCES `users_roles` (`id`);
-
-ALTER TABLE `users_users_roles` ADD FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
-
-ALTER TABLE `users_roles_params` ADD FOREIGN KEY (`role_id`) REFERENCES `users_roles` (`id`);
-
-ALTER TABLE `users_roles_params` ADD FOREIGN KEY (`param_id`) REFERENCES `users_params` (`id`);
-
-ALTER TABLE `history_users` ADD FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
-
-ALTER TABLE `history_users` ADD FOREIGN KEY (`item_id`) REFERENCES `users` (`id`);
-
-ALTER TABLE `photos_albums` ADD FOREIGN KEY (`parent_id`) REFERENCES `photos_albums` (`id`);
-
-ALTER TABLE `photos_albums` ADD FOREIGN KEY (`owner_id`) REFERENCES `users` (`id`);
-
-ALTER TABLE `photos` ADD FOREIGN KEY (`album_id`) REFERENCES `photos_albums` (`id`);
-
-ALTER TABLE `photos` ADD FOREIGN KEY (`owner_id`) REFERENCES `users` (`id`);
-
-ALTER TABLE `photos_albums_viewers` ADD FOREIGN KEY (`album_id`) REFERENCES `photos_albums` (`id`);
-
-ALTER TABLE `photos_albums_viewers` ADD FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
-
-ALTER TABLE `photos_viewers` ADD FOREIGN KEY (`photo_id`) REFERENCES `photos` (`id`);
-
-ALTER TABLE `photos_viewers` ADD FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
-
-ALTER TABLE `history_photos` ADD FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
-
-ALTER TABLE `history_photos` ADD FOREIGN KEY (`item_id`) REFERENCES `photos` (`id`);
-
-ALTER TABLE `history_photos_albums` ADD FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
-
-ALTER TABLE `history_photos_albums` ADD FOREIGN KEY (`item_id`) REFERENCES `photos_albums` (`id`);
-
-ALTER TABLE `photos_comments` ADD FOREIGN KEY (`who_add`) REFERENCES `users` (`id`);
-
-ALTER TABLE `photos_comments` ADD FOREIGN KEY (`photo_id`) REFERENCES `photos` (`id`);

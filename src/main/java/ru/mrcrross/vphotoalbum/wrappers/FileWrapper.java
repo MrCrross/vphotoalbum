@@ -1,9 +1,7 @@
 package ru.mrcrross.vphotoalbum.wrappers;
 
-import org.springframework.core.io.Resource;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -36,7 +34,7 @@ public class FileWrapper {
             Files.deleteIfExists(newFile);
             Files.copy(multipartFile.getInputStream(), newFile);
         } catch (Exception e) {
-            throw new RuntimeException("Could not store the file. Error: " + e.getMessage());
+            throw new RuntimeException("Не удалось сохранить файл. Ошибка: " + e.getMessage());
         }
         return urlNewFile;
     }
