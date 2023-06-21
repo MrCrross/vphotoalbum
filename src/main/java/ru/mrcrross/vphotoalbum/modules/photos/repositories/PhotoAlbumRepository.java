@@ -31,7 +31,7 @@ public class PhotoAlbumRepository extends RepositoryWrapper {
         } else {
             whereParentID += "IS NULL";
         }
-        return db.query("SELECT id, name, date_add FROM photos_albums WHERE owner_id = ? AND date_delete IS NULL AND " + whereParentID, new Object[]{currentUserID}, new PhotoAlbumBasicMapper());
+        return db.query("SELECT id, name, owner_id, date_add FROM photos_albums WHERE owner_id = ? AND date_delete IS NULL AND " + whereParentID, new Object[]{currentUserID}, new PhotoAlbumBasicMapper());
     }
 
     public PhotoAlbum getByID(int albumID)

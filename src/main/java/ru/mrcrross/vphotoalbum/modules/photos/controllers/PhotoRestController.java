@@ -68,15 +68,20 @@ public class PhotoRestController extends ControllerWrapper {
             @RequestParam(value="owner", required=false) Integer owner,
             HttpSession session
     ) {
-        User user = (User)session.getAttribute("user");
+        User currentUser = (User)session.getAttribute("user");
+        User user = currentUser;
         if (owner != null) {
             user = userService.get(owner.intValue());
         }
-        List<List<JSONObject>> response = new ArrayList<>();
+        List<Object> response = new ArrayList<>();
         List<JSONObject> breadCrumb = treeService.getBreadcrumb(id);
         List<JSONObject> tree = treeService.get(id, user);
+        JSONObject users = new JSONObject();
+        users.put("owner", user.getId());
+        users.put("current", currentUser.getId());
         response.add(breadCrumb);
         response.add(tree);
+        response.add(users);
         return new ResponseEntity<Object>(response, HttpStatus.OK);
     }
 
@@ -91,6 +96,23 @@ public class PhotoRestController extends ControllerWrapper {
         JSONObject entity = new JSONObject();
         entity.put("id", albumID);
         return new ResponseEntity<Object>(entity, HttpStatus.OK);
+    }
+
+    @PostMapping(path = "album/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Object> editAlbum(
+            @PathVariable("id") int albumID,
+            @RequestBody PhotoAlbum album,
+            HttpSession session
+    ) {
+        photoAlbumService.update(albumID, album);
+        PhotoAlbum currentAlbum = photoAlbumService.getByID(albumID);
+        JSONObject json = new JSONObject();
+        json.put("parentID", currentAlbum.getParentID());
+        json.put("parentName", currentAlbum.getParentID() != 0 ? currentAlbum.getParent().getName() : "");
+        json.put("name", currentAlbum.getName());
+        json.put("description", currentAlbum.getDescription());
+        json.put("dateEdit", currentAlbum.getDateEdit());
+        return new ResponseEntity<Object>(json, HttpStatus.OK);
     }
 
     @PostMapping(path = "")
@@ -130,7 +152,6 @@ public class PhotoRestController extends ControllerWrapper {
             @ModelAttribute Photo photo,
             @RequestParam(value = "file", required = false) MultipartFile file
     ) {
-        System.out.println(photo.getAlbumID());
         List<JSONObject> returns = new ArrayList<JSONObject>();
         if (file != null && !file.isEmpty()) {
             String checkExtensions = fileService.validateExtension(file);

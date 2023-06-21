@@ -16,6 +16,8 @@ public class PhotoAlbum implements Serializable {
     private String dateDelete;
     private User owner;
 
+    private PhotoAlbum parent;
+
     public int getId() {
         return id;
     }
@@ -86,5 +88,13 @@ public class PhotoAlbum implements Serializable {
 
     public void setOwner(User owner) {
         this.owner = owner;
+    }
+
+    public PhotoAlbum getParent() {
+        return parent;
+    }
+
+    public void setParent(PhotoAlbum parent) {
+        this.parent = parent;
     }
 }

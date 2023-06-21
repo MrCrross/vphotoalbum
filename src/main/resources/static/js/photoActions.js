@@ -1,6 +1,7 @@
 const createAlbumModalBootstrap = $('#createAlbumModal').length != 0 ? new bootstrap.Modal($('#createAlbumModal'), {}) : null;
 const createPhotoModalBootstrap = $('#createPhotoModal').length != 0 ? new bootstrap.Modal($('#createPhotoModal'), {}) : null;
 const editPhotoModalBootstrap = $('#editPhotoModal').length != 0 ? new bootstrap.Modal($('#editPhotoModal'), {})  : null;
+const editAlbumModalBootstrap = $('#editAlbumModal').length != 0 ? new bootstrap.Modal($('#editAlbumModal'), {})  : null;
 
 const updateBreadCrumb = (parents) => {
     const breadcrumb = $('#breadcrumb');
@@ -22,24 +23,34 @@ const updateBreadCrumb = (parents) => {
         })
     }
 }
-const updateTree = (tree) => {
+const updateTree = (tree, owners) => {
     const photosTree = $('#photos_tree');
     photosTree.find('li').remove();
     if (tree.length > 0) {
+        const viewer = owners.current === owners.owner;
+        let editAlbum = '';
+        let hrefPhoto = '';
         tree.forEach((el) => {
+            if (viewer) {
+                editAlbum = `<span><a href="/photo/album/${el.id}"><i class="fa-solid fa-pen"></i></a></span>`;
+                hrefPhoto = `href="/photo/${el.id}"`;
+            }
             if (el.type === 'folder') {
                 photosTree.append(`<li class="list-group-item">
-                    <a class="photo_link d-flex justify-content-between align-items-center text-decoration-none" data-id="${el.id}" type="button">
+                    <div class="photo_link d-flex justify-content-between align-items-center text-decoration-none cursor-pointer" data-id="${el.id}">
                         <div>
                             <img src="${el.path}" alt="" width="18" height="18">
                             <span>${el.name}</span>
                         </div>
-                        <span>${el.date_add}</span>
-                    </a>
+                        <div>
+                            ${editAlbum}
+                            <span>${el.date_add}</span>
+                        </div>
+                    </div>
                 </li>`);
             } else {
                 photosTree.append(`<li class="list-group-item">
-                    <a class="d-flex justify-content-between align-items-center text-decoration-none" href="/photo/${el.id}">
+                    <a class="d-flex justify-content-between align-items-center text-decoration-none" ${hrefPhoto}>
                         <div>
                             <img src="${el.path}" alt="" width="18" height="18">
                             <span>${el.name}</span>
@@ -48,7 +59,6 @@ const updateTree = (tree) => {
                     </a>
                 </li>`);
             }
-
         })
     } else {
         photosTree.append('<li class="list-group-item">Пока альбом пуст</li>')
@@ -77,7 +87,7 @@ $('#photos_card').click('.photo_link', (e) => {
         dataType: 'json',
         success: (data) => {
             updateBreadCrumb(data[0]);
-            updateTree(data[1]);
+            updateTree(data[1], data[2]);
         }
     })
 })
@@ -200,6 +210,76 @@ $("#createPhotoSubmit").click(() => {
             const toast = new bootstrap.Toast(toastSuccess, {});
             toast.show();
             createPhotoModalBootstrap.hide();
+        },
+        error: (req) => {
+            toastsBodyClear();
+            toastDanger.find('.toast-body').html(req.status);
+            const toast = new bootstrap.Toast(toastDanger, {});
+            toast.show();
+        }
+    })
+})
+
+$('#openEditAlbumModal').click(() => {
+    $.ajax('/api/photo/album/get', {
+        method: 'GET',
+        dataType: 'json',
+        success: (albums) => {
+            const editAlbumForm = $('#editAlbumForm');
+            editAlbumForm.find('#albumParent option').remove();
+            editAlbumForm.find('#albumParent').append("<option value='0'>Нет родителя</option>");
+            albums.forEach((album) => {
+                editAlbumForm.find('#albumParent').append("<option value='" + album.id + "'>" + album.name + "</option>");
+            })
+        }
+    })
+    editAlbumModalBootstrap.show();
+})
+
+$("#editAlbumSubmit").click(() => {
+    const editAlbumForm = $('#editAlbumForm');
+    const id = editAlbumForm.find('[name="id"]').val();
+    const ownerID = editAlbumForm.find('[name="ownerID"]').val();
+    const name = editAlbumForm.find('[name="name"]').val();
+    const description = editAlbumForm.find('[name="description"]').val();
+    const parentID = editAlbumForm.find('[name="parent_id"]').val();
+    const toastDanger = $('#toastDanger');
+    if (!$.trim(name).length) {
+        toastsBodyClear();
+        toastDanger.find('.toast-body').html('Заполните поле "Название альбома"');
+        const toast = new bootstrap.Toast(toastDanger, {});
+        toast.show();
+        return;
+    }
+
+    $.ajax('/api/photo/album/' + id, {
+        method: 'POST',
+        dataType: 'json',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+        data: JSON.stringify({
+            id,
+            ownerID,
+            name,
+            description,
+            parentID
+        }),
+        success: (req) => {
+            toastsBodyClear();
+            const toastSuccess = $('#toastSuccess');
+            toastSuccess.find('.toast-body').html('Альбом успешно изменен');
+            const toast = new bootstrap.Toast(toastSuccess, {});
+            toast.show();
+            $('#albumParentID').val(req.parentID);
+            $('#cardParent').html("Родитель: " + req.parentName);
+            $('#albumName').val(req.name);
+            $('#cardName').html("Название: " + req.name);
+            $('#albumDescription').val(req.description);
+            $('#cardDescription').html("Описание: " + req.description);
+            $('#cardDateEdit').html("Изменена: " + req.dateEdit);
+            editAlbumModalBootstrap.hide();
         },
         error: (req) => {
             toastsBodyClear();

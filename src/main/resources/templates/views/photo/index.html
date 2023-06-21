@@ -107,7 +107,7 @@
             dataType: 'json',
             success: (data) => {
                 updateBreadCrumb(data[0]);
-                updateTree(data[1]);
+                updateTree(data[1], data[2]);
             }
         })
     })
