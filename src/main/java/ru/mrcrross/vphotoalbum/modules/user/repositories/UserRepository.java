@@ -28,7 +28,7 @@ public class UserRepository extends RepositoryWrapper {
                 "SELECT " +
                 "id, avatar, login, fio, date_add " +
                 "FROM users " +
-                "WHERE id = ? AND date_delete IS NULL " +
+                "WHERE id = ? " +
                 "LIMIT 1", new Object[]{userID}, new AuthSessionMapper()).stream().findAny().orElse(null);
     }
 

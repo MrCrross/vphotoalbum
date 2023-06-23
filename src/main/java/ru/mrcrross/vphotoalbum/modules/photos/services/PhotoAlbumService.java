@@ -2,8 +2,7 @@ package ru.mrcrross.vphotoalbum.modules.photos.services;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import ru.mrcrross.vphotoalbum.models.PhotoAlbum;
-import ru.mrcrross.vphotoalbum.models.User;
+import ru.mrcrross.vphotoalbum.models.*;
 import ru.mrcrross.vphotoalbum.modules.photos.repositories.PhotoAlbumRepository;
 import ru.mrcrross.vphotoalbum.modules.user.repositories.UserRepository;
 
@@ -27,11 +26,6 @@ public class PhotoAlbumService {
     public List<PhotoAlbum> getForSelect(User user)
     {
         return albumRepository.getForSelect(user.getId());
-    }
-
-    public List<PhotoAlbum> getByParentID(Integer parentID, User user)
-    {
-        return albumRepository.getByParentID(parentID, user.getId());
     }
 
     public PhotoAlbum getByID(Integer id)
@@ -74,6 +68,39 @@ public class PhotoAlbumService {
         List<Map.Entry<String, Object>> fields = this.getAlbumFields(album);
         albumRepository.update(id, fields);
     }
+
+    public List<PhotoAlbumViewer> getViewers(Integer id)
+    {
+        return albumRepository.getViewers(id);
+    }
+
+    public void updateViewers(Integer albumID, List<PhotoAlbumViewer> viewers) {
+        albumRepository.deleteViewers(albumID);
+        for (PhotoAlbumViewer viewer : viewers) {
+            albumRepository.addViewer(viewer);
+        }
+    }
+
+    public Boolean checkOwner(Integer albumID, User currentUser)
+    {
+        int userID = currentUser.getId();
+        PhotoAlbum album = albumRepository.getByID(albumID);
+        if (album.getOwnerID() == userID) {
+            return true;
+        }
+        return false;
+    }
+
+    public Boolean checkViewer(Integer albumID, User currentUser)
+    {
+        Integer userID = currentUser.getId();
+        PhotoAlbumViewer viewer = albumRepository.getViewer(albumID, userID);
+        if (viewer != null) {
+            return true;
+        }
+        return false;
+    }
+
     private List<Map.Entry<String, Object>> getAlbumFields(PhotoAlbum album) {
         Map<String, Object> map = new HashMap<>();
         if (album.getName() != null && !album.getName().trim().isEmpty()) {

@@ -7,9 +7,10 @@
 </head>
 <body>
 <section>
-    <div class="container">
+    <div class="container my-2">
         <div class="card" th:object="${album}">
             <div class="card-body">
+                <input type="text" id="cardId" th:value="${album.getId()}" name="id" hidden>
                 <h5 class="card-title" id="cardName" th:text="${'Название:' + album.getName()}">album name</h5>
                 <h5 class="card-title" id="cardParent" th:if="${album.getParentID() != 0}"
                     th:text="${'Родитель: ' + album.getParent().getName()}">Parent album name</h5>
@@ -18,9 +19,39 @@
                 <p class="card-text" th:text="${'Добавил: ' + album.getOwner().getFio()}">album owner fio</p>
                 <p class="card-text" th:text="${'Добавлена: ' + album.getDateAdd()}">album dateAdd</p>
                 <p class="card-text" id="cardDateEdit" th:text="${'Изменена: ' + album.getDateEdit()}">Photo dateEdit</p>
+                <a type="button" id="openEditAlbumViewersModal" class="btn btn-primary">Редактировать доступ</a>
                 <a type="button" id="openEditAlbumModal" class="btn btn-primary">Редактировать</a>
                 <a type="button" data-bs-toggle="modal"
-                   data-bs-target="#deleteAlbum" th:attr="data-modal-delete = @{/photo/album/{id}/delete(id = ${album.getId()})}" class="btn btn-danger">Удалить</a>
+                   data-bs-target="#deleteAlbum"
+                   th:attr="data-modal-delete = @{/photo/album/{id}/delete(id = ${album.getId()})}"
+                   class="btn btn-danger">Удалить</a>
+            </div>
+        </div>
+        <div class="modal fade" id="editAlbumViewersModal" tabindex="-1" aria-labelledby="editAlbumViewersLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="editAlbumViewersLabel">Редактирование доступ к альбому</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="editViewersForm">
+                            <input type="text" name="id" hidden>
+                            <label class="form-label">Доступ</label>
+                            <div id="viewer_item_temp" class="viewer_item input-group mb-3 visually-hidden">
+                                <select class="form-select">
+                                    <option th:each="user : ${users}" th:value="${user.getId()}" th:text="${user.getFio()}"></option>
+                                </select>
+                                <button class="btn btn-success addViewer" type="button">+</button>
+                            </div>
+                            <div id="viewers_container"></div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                        <button id="editAlbumViewersSubmit" type="button" class="btn btn-primary">Изменить</button>
+                    </div>
+                </div>
             </div>
         </div>
         <div class="modal fade" id="editAlbumModal" tabindex="-1" aria-labelledby="editAlbumLabel" aria-hidden="true">
@@ -32,9 +63,9 @@
                     </div>
                     <div class="modal-body">
                         <form id="editAlbumForm" th:object="${album}">
-                                <input type="text" name="id" id="albumID" th:value="${album.getId()}" hidden>
-                                <input type="text" id="albumParentID" th:value="${album.getParentID()}" hidden>
-                                <input type="text" name="ownerID" id="albumOwnerID" th:value="${album.getOwnerID()}" hidden>
+                            <input type="text" name="id" id="albumID" th:value="${album.getId()}" hidden>
+                            <input type="text" id="albumParentID" th:value="${album.getParentID()}" hidden>
+                            <input type="text" name="ownerID" id="albumOwnerID" th:value="${album.getOwnerID()}" hidden>
                             <div class="mb-3">
                                 <label for="albumName" class="form-label">Название</label>
                                 <input type="text" class="form-control" name="name" id="albumName"

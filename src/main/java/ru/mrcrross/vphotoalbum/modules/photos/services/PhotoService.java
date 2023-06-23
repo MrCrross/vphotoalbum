@@ -3,6 +3,8 @@ package ru.mrcrross.vphotoalbum.modules.photos.services;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import ru.mrcrross.vphotoalbum.models.Photo;
+import ru.mrcrross.vphotoalbum.models.PhotoViewer;
+import ru.mrcrross.vphotoalbum.models.User;
 import ru.mrcrross.vphotoalbum.modules.photos.repositories.PhotoAlbumRepository;
 import ru.mrcrross.vphotoalbum.modules.photos.repositories.PhotoRepository;
 import ru.mrcrross.vphotoalbum.modules.user.repositories.UserRepository;
@@ -63,6 +65,38 @@ public class PhotoService {
         photo.setDateDelete(LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
         List<Map.Entry<String, Object>> fields = this.getPhotoFields(photo);
         photoRepository.update(id, fields);
+    }
+
+    public List<PhotoViewer> getViewers(Integer id)
+    {
+        return photoRepository.getViewers(id);
+    }
+
+    public void updateViewers(Integer photoID, List<PhotoViewer> viewers) {
+        photoRepository.deleteViewers(photoID);
+        for (PhotoViewer viewer : viewers) {
+            photoRepository.addViewer(viewer);
+        }
+    }
+
+    public Boolean checkOwner(Integer photoID, User currentUser)
+    {
+        int userID = currentUser.getId();
+        Photo photo = photoRepository.getByID(photoID);
+        if (photo.getOwnerID() == userID) {
+            return true;
+        }
+        return false;
+    }
+
+    public Boolean checkViewer(Integer photoID, User currentUser)
+    {
+        Integer userID = currentUser.getId();
+        PhotoViewer viewer = photoRepository.getViewer(photoID, userID);
+        if (viewer != null) {
+            return true;
+        }
+        return false;
     }
 
     private List<Map.Entry<String, Object>> getPhotoFields(Photo photo) {

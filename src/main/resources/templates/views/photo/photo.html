@@ -7,8 +7,9 @@
 </head>
 <body>
 <section>
-    <div class="container">
+    <div class="container my-2">
         <div class="card" th:object="${photo}">
+            <input type="text" id="cardId" th:value="${photo.getId()}" name="id" hidden>
             <img th:src="${photo.getPath()}" id="cardImg" class="card-img-top" th:alt="${photo.getName()}">
             <div class="card-body">
                 <h5 class="card-title" id="cardName" th:text="${'Название:' + photo.getName()}">Photo name</h5>
@@ -19,9 +20,37 @@
                 <p class="card-text" th:text="${'Добавил: ' + photo.getOwner().getFio()}">Photo owner fio</p>
                 <p class="card-text" th:text="${'Добавлена: ' + photo.getDateAdd()}">Photo dateAdd</p>
                 <p class="card-text" id="cardDateEdit" th:text="${'Изменена: ' + photo.getDateEdit()}">Photo dateEdit</p>
+                <a type="button" id="openEditPhotoViewersModal" class="btn btn-primary">Редактировать доступ</a>
                 <a type="button" id="openEditPhotoModal" class="btn btn-primary">Редактировать</a>
                 <a type="button" data-bs-toggle="modal"
                    data-bs-target="#deletePhoto" th:attr="data-modal-delete = @{/photo/{id}/delete(id = ${photo.getId()})}" class="btn btn-danger">Удалить</a>
+            </div>
+        </div>
+        <div class="modal fade" id="editPhotoViewersModal" tabindex="-1" aria-labelledby="editPhotoViewersLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="editPhotoViewersLabel">Редактирование доступ к альбому</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="editViewersForm">
+                            <input type="text" name="id" hidden>
+                            <label class="form-label">Доступ</label>
+                            <div id="viewer_item_temp" class="viewer_item input-group mb-3 visually-hidden">
+                                <select class="form-select">
+                                    <option th:each="user : ${users}" th:value="${user.getId()}" th:text="${user.getFio()}"></option>
+                                </select>
+                                <button class="btn btn-success addViewer" type="button">+</button>
+                            </div>
+                            <div id="viewers_container"></div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                        <button id="editPhotoViewersSubmit" type="button" class="btn btn-primary">Изменить</button>
+                    </div>
+                </div>
             </div>
         </div>
         <div class="modal fade" id="editPhotoModal" tabindex="-1" aria-labelledby="editPhotoLabel" aria-hidden="true">

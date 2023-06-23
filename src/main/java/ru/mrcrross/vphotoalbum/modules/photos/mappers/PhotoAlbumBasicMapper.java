@@ -13,6 +13,7 @@ public class PhotoAlbumBasicMapper implements RowMapper<PhotoAlbum> {
 
         album.setId(rs.getInt("id"));
         album.setName(rs.getString("name"));
+        album.setOwnerID(rs.getInt("owner_id"));
         album.setDateAdd(rs.getString("date_add"));
 
         return album;

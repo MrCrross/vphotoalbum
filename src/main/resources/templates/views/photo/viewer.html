@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en"
+      th:replace="~{fragments/base :: base_layout(~{::title}, ~{::section},~{::script})}"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Фотоальбомы</title>
+</head>
+<body>
+<section>
+    <div id="photos_card_viewer" class="card my-2">
+        <div class="card-header">
+            <div class="d-flex flex-row align-items-center justify-content-between">
+                <h4 class="h4">
+                    Доступные фотоальбомы
+                </h4>
+            </div>
+            <nav aria-label="breadcrumb">
+                <ol id="breadcrumb" class="breadcrumb">
+                </ol>
+            </nav>
+        </div>
+        <ul id="photos_tree" class="list-group list-group-flush">
+        </ul>
+    </div>
+</section>
+<script th:src="@{/js/photoActions.js}"></script>
+<script>
+    $('document').ready(() => {
+        const id = localStorage.getItem("currentUserID");
+        $.ajax('/api/photo/tree?type=viewer&&owner=' + id, {
+            method: 'GET',
+            dataType: 'json',
+            success: (data) => {
+                updateBreadCrumb(data[0]);
+                updateTree(data[1], data[2]);
+            }
+        })
+    })
+    $('#photos_card_viewer').click('.photo_link', (e) => {
+        const target = $(e.target);
+        const currentUserID = localStorage.getItem("currentUserID");
+        let id = 0;
+        if (target.hasClass('photo_link')) {
+            id = parseInt(target.data('id'));
+        } else {
+            id = target.parents('.photo_link').data('id')
+        }
+        let url = '/api/photo/tree?type=viewer&&owner=' + currentUserID;
+        if (id !== 0 && !isNaN(id)) {
+            url = '/api/photo/tree?type=viewer&&owner=' + currentUserID + '&&id=' + id;
+        }
+        $.ajax(url, {
+            method: 'GET',
+            dataType: 'json',
+            success: (data) => {
+                updateBreadCrumb(data[0]);
+                updateTree(data[1], data[2]);
+            }
+        })
+    })
+</script>
+</body>
+</html>

@@ -1,7 +1,6 @@
 package ru.mrcrross.vphotoalbum.modules.photos.controllers;
 
 import jakarta.servlet.http.HttpSession;
-import jakarta.validation.Valid;
 import net.minidev.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -9,9 +8,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import ru.mrcrross.vphotoalbum.models.Photo;
-import ru.mrcrross.vphotoalbum.models.PhotoAlbum;
-import ru.mrcrross.vphotoalbum.models.User;
+import ru.mrcrross.vphotoalbum.models.*;
 import ru.mrcrross.vphotoalbum.modules.photos.services.PhotoAlbumService;
 import ru.mrcrross.vphotoalbum.modules.photos.services.PhotoFileService;
 import ru.mrcrross.vphotoalbum.modules.photos.services.PhotoService;
@@ -66,18 +63,14 @@ public class PhotoRestController extends ControllerWrapper {
     public ResponseEntity<Object> getTree(
             @RequestParam(value="id", required=false) Integer id,
             @RequestParam(value="owner", required=false) Integer owner,
+            @RequestParam(value="type") String type,
             HttpSession session
     ) {
         User currentUser = (User)session.getAttribute("user");
-        User user = currentUser;
-        if (owner != null) {
-            user = userService.get(owner.intValue());
-        }
         List<Object> response = new ArrayList<>();
         List<JSONObject> breadCrumb = treeService.getBreadcrumb(id);
-        List<JSONObject> tree = treeService.get(id, user);
+        List<JSONObject> tree = treeService.get(id, currentUser, type);
         JSONObject users = new JSONObject();
-        users.put("owner", user.getId());
         users.put("current", currentUser.getId());
         response.add(breadCrumb);
         response.add(tree);
@@ -104,6 +97,12 @@ public class PhotoRestController extends ControllerWrapper {
             @RequestBody PhotoAlbum album,
             HttpSession session
     ) {
+        if (photoAlbumService.checkOwner(albumID, (User) session.getAttribute("user"))) {
+            JSONObject error = new JSONObject();
+            error.put("error", "1");
+            error.put("message", "Недостаточно прав");
+            return new ResponseEntity<Object>(error, HttpStatus.FORBIDDEN);
+        }
         photoAlbumService.update(albumID, album);
         PhotoAlbum currentAlbum = photoAlbumService.getByID(albumID);
         JSONObject json = new JSONObject();
@@ -150,8 +149,15 @@ public class PhotoRestController extends ControllerWrapper {
     public ResponseEntity<Object> editPhoto(
             @PathVariable("id") int photoID,
             @ModelAttribute Photo photo,
-            @RequestParam(value = "file", required = false) MultipartFile file
+            @RequestParam(value = "file", required = false) MultipartFile file,
+            HttpSession session
     ) {
+        if (photoService.checkOwner(photoID, (User) session.getAttribute("user"))) {
+            JSONObject error = new JSONObject();
+            error.put("error", "1");
+            error.put("message", "Недостаточно прав");
+            return new ResponseEntity<Object>(error, HttpStatus.FORBIDDEN);
+        }
         List<JSONObject> returns = new ArrayList<JSONObject>();
         if (file != null && !file.isEmpty()) {
             String checkExtensions = fileService.validateExtension(file);
@@ -174,5 +180,37 @@ public class PhotoRestController extends ControllerWrapper {
         jsonPhoto.put("description", currentPhoto.getDescription());
         jsonPhoto.put("dateEdit", currentPhoto.getDateEdit());
         return new ResponseEntity<Object>(jsonPhoto, HttpStatus.OK);
+    }
+
+    @GetMapping(path = "album/{id}/viewers")
+    public ResponseEntity<Object> getViewersAlbum(
+            @PathVariable("id") int albumID
+    ) {
+        return new ResponseEntity<Object>(photoAlbumService.getViewers(albumID), HttpStatus.OK);
+    }
+
+    @PostMapping(path = "album/{id}/viewers", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Object> setViewersAlbum(
+            @PathVariable("id") int albumID,
+            @RequestBody List<PhotoAlbumViewer> viewers
+    ) {
+        photoAlbumService.updateViewers(albumID, viewers);
+        return new ResponseEntity<Object>(photoAlbumService.getViewers(albumID), HttpStatus.OK);
+    }
+
+    @GetMapping(path = "{id}/viewers")
+    public ResponseEntity<Object> getViewersPhoto(
+            @PathVariable("id") int photoID
+    ) {
+        return new ResponseEntity<Object>(photoService.getViewers(photoID), HttpStatus.OK);
+    }
+
+    @PostMapping(path = "{id}/viewers", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Object> setViewersPhoto(
+            @PathVariable("id") int photoID,
+            @RequestBody List<PhotoViewer> viewers
+    ) {
+        photoService.updateViewers(photoID, viewers);
+        return new ResponseEntity<Object>(photoService.getViewers(photoID), HttpStatus.OK);
     }
 }

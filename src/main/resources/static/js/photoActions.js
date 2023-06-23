@@ -1,7 +1,9 @@
 const createAlbumModalBootstrap = $('#createAlbumModal').length != 0 ? new bootstrap.Modal($('#createAlbumModal'), {}) : null;
 const createPhotoModalBootstrap = $('#createPhotoModal').length != 0 ? new bootstrap.Modal($('#createPhotoModal'), {}) : null;
 const editPhotoModalBootstrap = $('#editPhotoModal').length != 0 ? new bootstrap.Modal($('#editPhotoModal'), {})  : null;
+const editPhotoViewersModalBootstrap = $('#editPhotoViewersModal').length != 0 ? new bootstrap.Modal($('#editPhotoViewersModal'), {})  : null;
 const editAlbumModalBootstrap = $('#editAlbumModal').length != 0 ? new bootstrap.Modal($('#editAlbumModal'), {})  : null;
+const editAlbumViewersModalBootstrap = $('#editAlbumViewersModal').length != 0 ? new bootstrap.Modal($('#editAlbumViewersModal'), {})  : null;
 
 const updateBreadCrumb = (parents) => {
     const breadcrumb = $('#breadcrumb');
@@ -27,13 +29,18 @@ const updateTree = (tree, owners) => {
     const photosTree = $('#photos_tree');
     photosTree.find('li').remove();
     if (tree.length > 0) {
-        const viewer = owners.current === owners.owner;
         let editAlbum = '';
+        let owner = '';
         let hrefPhoto = '';
         tree.forEach((el) => {
-            if (viewer) {
+            console.log(el.owner_id === owners.current)
+            console.log(el.owner_id)
+            console.log(owners.current)
+            if (el.owner_id === owners.current) {
                 editAlbum = `<span><a href="/photo/album/${el.id}"><i class="fa-solid fa-pen"></i></a></span>`;
                 hrefPhoto = `href="/photo/${el.id}"`;
+            } else {
+                owner = el.owner_name;
             }
             if (el.type === 'folder') {
                 photosTree.append(`<li class="list-group-item">
@@ -44,6 +51,7 @@ const updateTree = (tree, owners) => {
                         </div>
                         <div>
                             ${editAlbum}
+                            ${owner}
                             <span>${el.date_add}</span>
                         </div>
                     </div>
@@ -65,6 +73,38 @@ const updateTree = (tree, owners) => {
     }
 }
 
+const updateViewers = (form, id, viewers) => {
+    const container = $('#viewers_container');
+    container.find('.viewer_item').remove();
+    const viewerItem = form.find('#viewer_item_temp');
+    form.find('[name="id"]').attr('value', id);
+    if (viewers.length !== 0) {
+        viewers.forEach((viewer, index) => {
+            const clone = viewerItem.clone();
+            clone.removeAttr('id')
+            clone.removeClass('visually-hidden');
+            clone.find('select').attr('name', 'viewers');
+            clone.find('select option').each((key, option) => {
+                if (parseInt($(option).attr('value')) === viewer.viewer) {
+                    $(option).attr('selected', 'selected');
+                }
+            })
+
+            if (index > 0) {
+                clone.find('button').remove();
+                clone.append('<button class="btn btn-danger removeViewer" type="button">-</button>')
+            }
+            container.append(clone);
+        })
+    } else {
+        const clone = viewerItem.clone();
+        clone.removeAttr('id')
+        clone.removeClass('visually-hidden');
+        clone.find('select').attr('name', 'viewers');
+        container.append(clone);
+    }
+}
+
 const toastsBodyClear = ()=>{
     $('#toastDanger').find('.toast-body').html('');
     $('#toastSuccess').find('.toast-body').html('');
@@ -78,9 +118,9 @@ $('#photos_card').click('.photo_link', (e) => {
     } else {
         id = target.parents('.photo_link').data('id')
     }
-    let url = '/api/photo/tree';
+    let url = '/api/photo/tree?type=my';
     if (id !== 0 && !isNaN(id)) {
-        url = '/api/photo/tree?id=' + id;
+        url = '/api/photo/tree?type=my&&id=' + id;
     }
     $.ajax(url, {
         method: 'GET',
@@ -363,4 +403,110 @@ $("#editPhotoSubmit").click(() => {
             toast.show();
         }
     })
+})
+
+$('#openEditAlbumViewersModal').click(() => {
+    const albumID = $('#cardId').val();
+    $.ajax('/api/photo/album/' + albumID + '/viewers', {
+        method: 'GET',
+        dataType: 'json',
+        success: (viewers) => {
+            const editAlbumViewersForm = $('#editViewersForm');
+            updateViewers(editAlbumViewersForm, albumID, viewers)
+        }
+    })
+    editAlbumViewersModalBootstrap.show();
+})
+
+$('#viewers_container').on('click', '.addViewer', () => {
+    const container = $('#viewers_container');
+    const clone = $('#editViewersForm').find('#viewer_item_temp').clone();
+    clone.removeAttr('id');
+    clone.removeClass('visually-hidden');
+    clone.find('select').attr('name', 'viewers');
+    clone.find('button').remove();
+    clone.append('<button class="btn btn-danger removeViewer" type="button">-</button>')
+    container.append(clone);
+})
+
+$('#viewers_container').on('click', '.removeViewer', (e) => {
+    const btn = $(e.target);
+    btn.parent().remove();
+})
+
+$('#editAlbumViewersSubmit').click(() => {
+    const form = $('#editViewersForm');
+    const viewers = form.find('[name = "viewers"]');
+    const id = form.find('[name = "id"]').val();
+    const data = [];
+    viewers.each((key, el) => {
+        data.push({
+            "albumID": id,
+            "viewer": $(el).val()
+        });
+    })
+    $.ajax('/api/photo/album/' + id + '/viewers', {
+        method: 'POST',
+        dataType: 'json',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+        data: JSON.stringify(data),
+        success: (viewers) => {
+            const editAlbumViewersForm = $('#editViewersForm');
+            updateViewers(editAlbumViewersForm, id, viewers);
+            toastsBodyClear();
+            const toastSuccess = $('#toastSuccess');
+            toastSuccess.find('.toast-body').html('Доступ к альбому изменен');
+            const toast = new bootstrap.Toast(toastSuccess, {});
+            toast.show();
+            editAlbumViewersModalBootstrap.hide();
+        }
+    });
+})
+
+$('#openEditPhotoViewersModal').click(() => {
+    const photoID = $('#cardId').val();
+    $.ajax('/api/photo/' + photoID + '/viewers', {
+        method: 'GET',
+        dataType: 'json',
+        success: (viewers) => {
+            const editPhotoViewersForm = $('#editViewersForm');
+            updateViewers(editPhotoViewersForm, photoID, viewers)
+        }
+    })
+    editPhotoViewersModalBootstrap.show();
+})
+
+$('#editPhotoViewersSubmit').click(() => {
+    const form = $('#editViewersForm');
+    const viewers = form.find('[name = "viewers"]');
+    const id = form.find('[name = "id"]').val();
+    const data = [];
+    viewers.each((key, el) => {
+        data.push({
+            "photoID": id,
+            "viewer": $(el).val()
+        });
+    })
+    $.ajax('/api/photo/' + id + '/viewers', {
+        method: 'POST',
+        dataType: 'json',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+        data: JSON.stringify(data),
+        success: (viewers) => {
+            const editPhotoViewersForm = $('#editViewersForm');
+            updateViewers(editPhotoViewersForm, id, viewers);
+            toastsBodyClear();
+            const toastSuccess = $('#toastSuccess');
+            toastSuccess.find('.toast-body').html('Доступ к фотографии изменен');
+            const toast = new bootstrap.Toast(toastSuccess, {});
+            toast.show();
+            editPhotoViewersModalBootstrap.hide();
+        }
+    });
 })
