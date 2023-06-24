@@ -7,8 +7,38 @@
 </head>
 <body>
 <section>
-  <div th:if="${session.user != null}">
-    Привет мир!)
+  <div class="container my-2 d-flex justify-content-center">
+    <form th:action="@{/account}" method="post" class="w-50 border border-dark p-2 rounded" th:object="${user}" enctype="multipart/form-data">
+      <div class="my-2 mx-auto" >
+        <img th:src="*{getAvatar()}" class="col-12 border-secondary border p-2 rounded" th:alt="*{getFio()}">
+      </div>
+      <div class="form-floating mb-2">
+        <input type="file" class="form-control" name="file" id="avatar" placeholder="Аватар">
+        <label for="avatar">Аватар</label>
+      </div>
+      <div class="form-floating mb-2">
+        <input type="text" class="form-control" th:field="*{fio}" th:value="*{getFio()}" id="fio" placeholder="ФИО">
+        <label for="fio">ФИО</label>
+        <div th:if="${#fields.hasErrors('fio')}" th:errors="*{fio}">fio error</div>
+      </div>
+      <div class="form-floating mb-2">
+        <input type="text" class="form-control" th:field="*{login}" th:value="*{getLogin()}" id="login" placeholder="Логин">
+        <label for="login">Логин</label>
+        <div th:if="${#fields.hasErrors('login')}" th:errors="*{login}">login error</div>
+      </div>
+      <div class="form-floating mb-2">
+        <input type="password" class="form-control" th:field="*{password}" id="password" placeholder="Пароль">
+        <label for="password">Пароль</label>
+        <div th:if="${#fields.hasErrors('password')}" th:errors="*{password}">password error</div>
+      </div>
+      <h3 class="h3 mb-2">Роли</h3>
+      <div th:if="${#fields.hasErrors('roles')}" th:errors="*{roles}">roles error</div>
+      <div class="form-check form-switch mb-2" th:each="role : ${roles}">
+        <input class="form-check-input" name="roles" th:value="${role.getId()}" th:checked="${user.roles.contains(role.getTechName()) ? 'true' : 'false'}" type="checkbox" th:id="'role' + ${role.getId()}">
+        <label class="form-check-label" th:for="'role' + ${role.getId()}" th:text="${role.getName()}" th:alt="${role.getTechName()}" th:title="${role.getTechName()}"></label>
+      </div>
+      <button class="w-100 btn btn-lg btn-primary" type="submit">Сохранить</button>
+    </form>
   </div>
 </section>
 </body>

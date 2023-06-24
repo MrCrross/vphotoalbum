@@ -62,16 +62,6 @@ CREATE TABLE IF NOT EXISTS `users_roles_params` (
     FOREIGN KEY (`param_id`) REFERENCES `users_params` (`id`)
 );
 
-CREATE TABLE IF NOT EXISTS `history_users` (
-  `id` int PRIMARY KEY NOT NULL AUTO_INCREMENT,
-  `user_id` int NOT NULL,
-  `item_id` int NOT NULL,
-  `message` text NOT NULL,
-  `date_add` datetime NOT NULL,
-  FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),
-    FOREIGN KEY (`item_id`) REFERENCES `users` (`id`)
-);
-
 CREATE TABLE IF NOT EXISTS `photos_albums` (
   `id` int PRIMARY KEY NOT NULL AUTO_INCREMENT,
   `name` varchar(255) NOT NULL UNIQUE,
@@ -113,34 +103,4 @@ CREATE TABLE IF NOT EXISTS `photos_viewers` (
   PRIMARY KEY (`user_id`, `photo_id`),
     FOREIGN KEY (`photo_id`) REFERENCES `photos` (`id`),
     FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
-);
-
-CREATE TABLE IF NOT EXISTS `history_photos` (
-  `id` int PRIMARY KEY NOT NULL AUTO_INCREMENT,
-  `user_id` int NOT NULL,
-  `item_id` int NOT NULL,
-  `message` text NOT NULL,
-  `date_add` datetime NOT NULL,
-  FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),
-    FOREIGN KEY (`item_id`) REFERENCES `photos` (`id`)
-);
-
-CREATE TABLE IF NOT EXISTS `history_photos_albums` (
-  `id` int PRIMARY KEY NOT NULL AUTO_INCREMENT,
-  `user_id` int NOT NULL,
-  `item_id` int NOT NULL,
-  `message` text NOT NULL,
-  `date_add` datetime NOT NULL,
-  FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),
-    FOREIGN KEY (`item_id`) REFERENCES `photos_albums` (`id`)
-);
-
-CREATE TABLE IF NOT EXISTS `photos_comments` (
-  `id` int PRIMARY KEY NOT NULL AUTO_INCREMENT,
-  `who_add` int NOT NULL,
-  `photo_id` int NOT NULL,
-  `comment` text NOT NULL,
-  `date_add` datetime NOT NULL,
-  FOREIGN KEY (`who_add`) REFERENCES `users` (`id`),
-    FOREIGN KEY (`photo_id`) REFERENCES `photos` (`id`)
 );

@@ -6,7 +6,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 public class User implements Serializable {
     private int id = 0;
-    private String avatar = "/img/avatar.svg";
+    private String avatar;
     @NotEmpty(message = "Логин не должен быть пустым")
     private String login;
     @NotEmpty(message = "Пароль не должен быть пустым")

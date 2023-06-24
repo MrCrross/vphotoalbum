@@ -119,6 +119,8 @@ public class UserController extends ControllerWrapper {
             if (!checkExtensions.equals("")) {
                 return "redirect:/user/add?error=" + URLEncoder.encode(checkExtensions, StandardCharsets.UTF_8);
             }
+        } else {
+            user.setAvatar("/img/avatar.svg");
         }
         int id = userService.add(user, roles);
         if (!avatar.isEmpty()) {
@@ -149,7 +151,7 @@ public class UserController extends ControllerWrapper {
         if (!avatar.isEmpty()) {
             String checkExtensions = userAvatarService.validateExtension(avatar);
             if (!checkExtensions.equals("")) {
-                return "redirect:/user/add?error=" + URLEncoder.encode(checkExtensions, StandardCharsets.UTF_8);
+                return "redirect:/user/" + id + "/edit?error=" + URLEncoder.encode(checkExtensions, StandardCharsets.UTF_8);
             }
         }
         userService.update(id, user);
