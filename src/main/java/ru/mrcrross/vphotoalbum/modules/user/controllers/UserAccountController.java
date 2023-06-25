@@ -42,7 +42,7 @@ public class UserAccountController extends ControllerWrapper {
             HttpSession session
     ) {
         if (this.loginControl(session)) {
-            return "redirect:/";
+            return "redirect:/login";
         }
         User sessionUser = (User) session.getAttribute("user");
         model.addAttribute("user", userService.get(sessionUser.getId()));

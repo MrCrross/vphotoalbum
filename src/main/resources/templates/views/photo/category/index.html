@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html   lang="en"
+        th:replace="~{fragments/base :: base_layout(~{::title}, ~{::section},~{::script})}"
+        xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>Роли</title>
+</head>
+<body>
+<section class="container">
+  <div class="card my-2">
+    <div class="card-header">
+      <div class="d-flex flex-row align-items-center justify-content-between">
+        <h4 class="h4">
+          Категории
+        </h4>
+        <div class="">
+          <button class="btn btn-primary me-2" id="openCreateCategoryModal" type="button">Добавить Категорию
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="d-flex flex-column mt-3">
+    <div class="d-flex flex-row border">
+      <div class="col-1 p-2 border-end fw-bold">ID</div>
+      <div class="col-3 p-2 border-end fw-bold">Название</div>
+      <div class="col-2 p-2 border-end fw-bold">Родитель</div>
+      <div class="col-2 p-2 border-end fw-bold">Создатель</div>
+      <div class="col-4 p-2 fw-bold">Действия</div>
+    </div>
+    <div class="d-flex flex-column">
+      <div class="d-flex flex-row border cursor-pointer" th:if="${categories.size() != 0}" th:each="category : ${categories}" th:attr="data-href=@{/photo/category/{id}(id = ${category.getId()})}">
+        <div class="col-1 p-2 border-end fw-bold" th:text="${category.getId()}">ID</div>
+        <div class="col-3 p-2 border-end" th:text="${category.getName()}">Название</div>
+        <div class="col-2 p-2 border-end" th:if="${category.getParent() != null}" th:text="${category.getParent().getName()}">Родитель</div>
+        <div class="col-2 p-2 border-end" th:if="${category.getParent() == null}">Нет родителя</div>
+        <div class="col-2 p-2 border-end" th:text="${category.getOwner().getFio()}">Создатель</div>
+        <div class="col-4 p-2">
+          <a class="btn btn-secondary" th:href="@{/photo/category/{id}(id = ${category.getId()})}">Изучить</a>
+        </div>
+      </div>
+      <div th:if="${categories.size() == 0}">Категорий пока нет.</div>
+    </div>
+  </div>
+  <div class="modal fade" id="createCategoryModal" tabindex="-1" aria-labelledby="createCategoryLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="createCategoryLabel">Добавление категории</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+        </div>
+        <div class="modal-body">
+          <form id="createCategoryForm">
+            <div class="mb-3">
+              <label for="categoryName" class="form-label">Название категории</label>
+              <input type="text" class="form-control" name="name" id="categoryName" placeholder="Название">
+            </div>
+            <div class="mb-3">
+              <label for="categoryParent" class="form-label">Родитель</label>
+              <select class="form-select" name="parent_id" id="categoryParent"></select>
+            </div>
+            <div class="mb-3">
+              <label for="categoryDescription" class="form-label">Описание</label>
+              <textarea class="form-control" name="description" id="categoryDescription"
+                        placeholder="Описание" cols="30"
+                        rows="10"></textarea>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+          <button id="createCategorySubmit" type="button" class="btn btn-primary">Добавить</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div th:replace="~{fragments/toasters}"></div>
+</section>
+<script th:src="@{/js/photoActions.js}"></script>
+</body>
+</html>

@@ -9,11 +9,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import ru.mrcrross.vphotoalbum.models.*;
-import ru.mrcrross.vphotoalbum.modules.photos.services.PhotoAlbumService;
+import ru.mrcrross.vphotoalbum.modules.photos.services.PhotoCategoryService;
 import ru.mrcrross.vphotoalbum.modules.photos.services.PhotoFileService;
 import ru.mrcrross.vphotoalbum.modules.photos.services.PhotoService;
 import ru.mrcrross.vphotoalbum.modules.photos.services.PhotoTreeService;
-import ru.mrcrross.vphotoalbum.modules.user.services.UserService;
 import ru.mrcrross.vphotoalbum.wrappers.ControllerWrapper;
 
 import java.util.ArrayList;
@@ -22,38 +21,32 @@ import java.util.List;
 @RestController
 @RequestMapping(path = "api/photo")
 public class PhotoRestController extends ControllerWrapper {
-    private final PhotoAlbumService photoAlbumService;
+    private final PhotoCategoryService photoCategoryService;
     private final PhotoService photoService;
     private final PhotoFileService fileService;
     private final PhotoTreeService treeService;
-    private final UserService userService;
 
     @Autowired
     public PhotoRestController(
-            PhotoAlbumService photoAlbumService,
+            PhotoCategoryService photoCategoryService,
             PhotoService photoService,
             PhotoFileService fileService,
-            PhotoTreeService treeService,
-            UserService userService
+            PhotoTreeService treeService
     ) {
-        this.photoAlbumService = photoAlbumService;
+        this.photoCategoryService = photoCategoryService;
         this.photoService = photoService;
         this.fileService = fileService;
         this.treeService = treeService;
-        this.userService = userService;
     }
 
-    @GetMapping(path = "album/get")
-    public ResponseEntity<Object> getAlbums(
-            HttpSession session
-    ) {
-        User currentUser = (User) session.getAttribute("user");
-        List<PhotoAlbum> albums = photoAlbumService.getForSelect(currentUser);
+    @GetMapping(path = "category/get")
+    public ResponseEntity<Object> getCategories() {
+        List<PhotoCategory> categories = photoCategoryService.getForSelect();
         List<JSONObject> entities = new ArrayList<JSONObject>();
-        for (PhotoAlbum album : albums) {
+        for (PhotoCategory category : categories) {
             JSONObject entity = new JSONObject();
-            entity.put("id", album.getId());
-            entity.put("name", album.getName());
+            entity.put("id", category.getId());
+            entity.put("name", category.getName());
             entities.add(entity);
         }
         return new ResponseEntity<Object>(entities, HttpStatus.OK);
@@ -61,15 +54,14 @@ public class PhotoRestController extends ControllerWrapper {
 
     @GetMapping(path = "tree")
     public ResponseEntity<Object> getTree(
-            @RequestParam(value="id", required=false) Integer id,
-            @RequestParam(value="owner", required=false) Integer owner,
-            @RequestParam(value="type") String type,
+            @RequestParam(value = "id", required = false) Integer id,
+            @RequestParam(value = "type") String type,
             HttpSession session
     ) {
-        User currentUser = (User)session.getAttribute("user");
+        User currentUser = (User) session.getAttribute("user");
         List<Object> response = new ArrayList<>();
         List<JSONObject> breadCrumb = treeService.getBreadcrumb(id);
-        List<JSONObject> tree = treeService.get(id, currentUser, type);
+        List<JSONObject> tree = treeService.get(id, currentUser);
         JSONObject users = new JSONObject();
         users.put("current", currentUser.getId());
         response.add(breadCrumb);
@@ -78,39 +70,43 @@ public class PhotoRestController extends ControllerWrapper {
         return new ResponseEntity<Object>(response, HttpStatus.OK);
     }
 
-    @PostMapping(path = "album", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Object> addAlbum(
-            @RequestBody PhotoAlbum album,
+    @GetMapping(path = "category/tree")
+    public ResponseEntity<Object> getCategoryTree() {
+        return new ResponseEntity<Object>(photoCategoryService.getTree(), HttpStatus.OK);
+    }
+
+    @PostMapping(path = "category", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Object> addCategory(
+            @RequestBody PhotoCategory category,
             HttpSession session
     ) {
         User currentUser = (User) session.getAttribute("user");
-        album.setOwnerID(currentUser.getId());
-        int albumID = photoAlbumService.add(album);
+        category.setOwnerID(currentUser.getId());
+        int categoryID = photoCategoryService.add(category);
         JSONObject entity = new JSONObject();
-        entity.put("id", albumID);
+        entity.put("id", categoryID);
         return new ResponseEntity<Object>(entity, HttpStatus.OK);
     }
 
-    @PostMapping(path = "album/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Object> editAlbum(
-            @PathVariable("id") int albumID,
-            @RequestBody PhotoAlbum album,
+    @PostMapping(path = "category/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Object> editCategory(
+            @PathVariable("id") int categoryID,
+            @RequestBody PhotoCategory category,
             HttpSession session
     ) {
-        if (photoAlbumService.checkOwner(albumID, (User) session.getAttribute("user"))) {
+        if (this.paramsControl(session, "category_changed")) {
             JSONObject error = new JSONObject();
             error.put("error", "1");
             error.put("message", "Недостаточно прав");
             return new ResponseEntity<Object>(error, HttpStatus.FORBIDDEN);
         }
-        photoAlbumService.update(albumID, album);
-        PhotoAlbum currentAlbum = photoAlbumService.getByID(albumID);
+        photoCategoryService.update(categoryID, category);
+        PhotoCategory currentCategory = photoCategoryService.getByID(categoryID);
         JSONObject json = new JSONObject();
-        json.put("parentID", currentAlbum.getParentID());
-        json.put("parentName", currentAlbum.getParentID() != 0 ? currentAlbum.getParent().getName() : "");
-        json.put("name", currentAlbum.getName());
-        json.put("description", currentAlbum.getDescription());
-        json.put("dateEdit", currentAlbum.getDateEdit());
+        json.put("parent", currentCategory.getParent());
+        json.put("name", currentCategory.getName());
+        json.put("description", currentCategory.getDescription());
+        json.put("dateEdit", currentCategory.getDateEdit());
         return new ResponseEntity<Object>(json, HttpStatus.OK);
     }
 
@@ -120,7 +116,7 @@ public class PhotoRestController extends ControllerWrapper {
             @RequestParam(value = "file") MultipartFile file,
             HttpSession session
     ) {
-        User currentUser = (User)session.getAttribute("user");
+        User currentUser = (User) session.getAttribute("user");
         photo.setOwnerID(currentUser.getId());
         List<JSONObject> returns = new ArrayList<JSONObject>();
         if (!file.isEmpty()) {
@@ -173,8 +169,7 @@ public class PhotoRestController extends ControllerWrapper {
         photoService.update(photoID, photo);
         Photo currentPhoto = photoService.getByID(photoID);
         JSONObject jsonPhoto = new JSONObject();
-        jsonPhoto.put("albumID", currentPhoto.getAlbumID());
-        jsonPhoto.put("albumName", currentPhoto.getAlbumID() != 0 ? currentPhoto.getAlbum().getName() : "");
+        jsonPhoto.put("category", currentPhoto.getCategory());
         jsonPhoto.put("path", currentPhoto.getPath());
         jsonPhoto.put("name", currentPhoto.getName());
         jsonPhoto.put("description", currentPhoto.getDescription());
@@ -182,35 +177,68 @@ public class PhotoRestController extends ControllerWrapper {
         return new ResponseEntity<Object>(jsonPhoto, HttpStatus.OK);
     }
 
-    @GetMapping(path = "album/{id}/viewers")
-    public ResponseEntity<Object> getViewersAlbum(
-            @PathVariable("id") int albumID
-    ) {
-        return new ResponseEntity<Object>(photoAlbumService.getViewers(albumID), HttpStatus.OK);
-    }
-
-    @PostMapping(path = "album/{id}/viewers", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Object> setViewersAlbum(
-            @PathVariable("id") int albumID,
-            @RequestBody List<PhotoAlbumViewer> viewers
-    ) {
-        photoAlbumService.updateViewers(albumID, viewers);
-        return new ResponseEntity<Object>(photoAlbumService.getViewers(albumID), HttpStatus.OK);
-    }
-
-    @GetMapping(path = "{id}/viewers")
-    public ResponseEntity<Object> getViewersPhoto(
-            @PathVariable("id") int photoID
-    ) {
-        return new ResponseEntity<Object>(photoService.getViewers(photoID), HttpStatus.OK);
-    }
-
-    @PostMapping(path = "{id}/viewers", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Object> setViewersPhoto(
+    @PostMapping(path = "{id}/comment", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Object> addCommentPhoto(
             @PathVariable("id") int photoID,
-            @RequestBody List<PhotoViewer> viewers
+            @RequestBody PhotoComment comment,
+            HttpSession session
     ) {
-        photoService.updateViewers(photoID, viewers);
-        return new ResponseEntity<Object>(photoService.getViewers(photoID), HttpStatus.OK);
+        if (this.loginControl(session)) {
+            JSONObject error = new JSONObject();
+            error.put("error", "1");
+            error.put("message", "Неавторизованный пользователь");
+            return new ResponseEntity<Object>(error, HttpStatus.UNAUTHORIZED);
+        }
+        comment.setUserID(((User) session.getAttribute("user")).getId());
+        photoService.addComment(comment);
+        return new ResponseEntity<Object>(photoService.getByID(photoID).getComments(), HttpStatus.OK);
+    }
+
+
+    @GetMapping(path = "get")
+    public ResponseEntity<Object> getPagePhotos(
+            @RequestParam(value = "page", required = false, defaultValue = "1") Integer page,
+            @RequestParam(value = "owner_id", required = false) Integer owner,
+            @RequestParam(value = "category[]", required = false) List<Integer> categories,
+            @RequestParam(value = "search", required = false, defaultValue = "") String search
+    ) {
+        List<Photo> photos = photoService.getPage(page, categories, search, owner);
+        JSONObject jsonPage = new JSONObject();
+        jsonPage.put("data", photos);
+        jsonPage.put("currentPage", page);
+        jsonPage.put("maxPage", photoService.countPage(categories, search, owner));
+        return new ResponseEntity<Object>(jsonPage, HttpStatus.OK);
+    }
+
+    @PostMapping(path = "comment", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Object> saveComment(
+            @RequestBody PhotoComment comment,
+            HttpSession session
+    ) {
+        if (this.loginControl(session)) {
+            JSONObject error = new JSONObject();
+            error.put("error", "1");
+            error.put("message", "Неавторизованный пользователь");
+            return new ResponseEntity<Object>(error, HttpStatus.UNAUTHORIZED);
+        }
+        comment.setUserID(((User) session.getAttribute("user")).getId());
+        photoService.addComment(comment);
+        return new ResponseEntity<Object>(photoService.getByID(comment.getPhotoID()).getComments(), HttpStatus.OK);
+    }
+
+    @GetMapping(path = "{photoID}/comment/{commentID}")
+    public ResponseEntity<Object> deleteComment(
+            @PathVariable("photoID") Integer photoID,
+            @PathVariable("commentID") Integer commentID,
+            HttpSession session
+    ) {
+        if (this.loginControl(session)) {
+            JSONObject error = new JSONObject();
+            error.put("error", "1");
+            error.put("message", "Неавторизованный пользователь");
+            return new ResponseEntity<Object>(error, HttpStatus.UNAUTHORIZED);
+        }
+        photoService.deleteComment(commentID);
+        return new ResponseEntity<Object>(photoService.getByID(photoID).getComments(), HttpStatus.OK);
     }
 }

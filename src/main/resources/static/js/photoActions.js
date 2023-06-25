@@ -1,9 +1,7 @@
-const createAlbumModalBootstrap = $('#createAlbumModal').length != 0 ? new bootstrap.Modal($('#createAlbumModal'), {}) : null;
+const createCategoryModalBootstrap = $('#createCategoryModal').length != 0 ? new bootstrap.Modal($('#createCategoryModal'), {}) : null;
 const createPhotoModalBootstrap = $('#createPhotoModal').length != 0 ? new bootstrap.Modal($('#createPhotoModal'), {}) : null;
-const editPhotoModalBootstrap = $('#editPhotoModal').length != 0 ? new bootstrap.Modal($('#editPhotoModal'), {})  : null;
-const editPhotoViewersModalBootstrap = $('#editPhotoViewersModal').length != 0 ? new bootstrap.Modal($('#editPhotoViewersModal'), {})  : null;
-const editAlbumModalBootstrap = $('#editAlbumModal').length != 0 ? new bootstrap.Modal($('#editAlbumModal'), {})  : null;
-const editAlbumViewersModalBootstrap = $('#editAlbumViewersModal').length != 0 ? new bootstrap.Modal($('#editAlbumViewersModal'), {})  : null;
+const editPhotoModalBootstrap = $('#editPhotoModal').length != 0 ? new bootstrap.Modal($('#editPhotoModal'), {}) : null;
+const editCategoryModalBootstrap = $('#editCategoryModal').length != 0 ? new bootstrap.Modal($('#editCategoryModal'), {}) : null;
 
 const updateBreadCrumb = (parents) => {
     const breadcrumb = $('#breadcrumb');
@@ -25,145 +23,45 @@ const updateBreadCrumb = (parents) => {
         })
     }
 }
-const updateTree = (tree, owners) => {
-    const photosTree = $('#photos_tree');
-    photosTree.find('li').remove();
-    if (tree.length > 0) {
-        let editAlbum = '';
-        let owner = '';
-        let hrefPhoto = '';
-        tree.forEach((el) => {
-            console.log(el.owner_id === owners.current)
-            console.log(el.owner_id)
-            console.log(owners.current)
-            if (el.owner_id === owners.current) {
-                editAlbum = `<span><a href="/photo/album/${el.id}"><i class="fa-solid fa-pen"></i></a></span>`;
-                hrefPhoto = `href="/photo/${el.id}"`;
-            } else {
-                owner = el.owner_name;
-            }
-            if (el.type === 'folder') {
-                photosTree.append(`<li class="list-group-item">
-                    <div class="photo_link d-flex justify-content-between align-items-center text-decoration-none cursor-pointer" data-id="${el.id}">
-                        <div>
-                            <img src="${el.path}" alt="" width="18" height="18">
-                            <span>${el.name}</span>
-                        </div>
-                        <div>
-                            ${editAlbum}
-                            ${owner}
-                            <span>${el.date_add}</span>
-                        </div>
-                    </div>
-                </li>`);
-            } else {
-                photosTree.append(`<li class="list-group-item">
-                    <a class="d-flex justify-content-between align-items-center text-decoration-none" ${hrefPhoto}>
-                        <div>
-                            <img src="${el.path}" alt="" width="18" height="18">
-                            <span>${el.name}</span>
-                        </div>
-                        <span>${el.date_add}</span>
-                    </a>
-                </li>`);
-            }
-        })
-    } else {
-        photosTree.append('<li class="list-group-item">Пока альбом пуст</li>')
-    }
-}
 
-const updateViewers = (form, id, viewers) => {
-    const container = $('#viewers_container');
-    container.find('.viewer_item').remove();
-    const viewerItem = form.find('#viewer_item_temp');
-    form.find('[name="id"]').attr('value', id);
-    if (viewers.length !== 0) {
-        viewers.forEach((viewer, index) => {
-            const clone = viewerItem.clone();
-            clone.removeAttr('id')
-            clone.removeClass('visually-hidden');
-            clone.find('select').attr('name', 'viewers');
-            clone.find('select option').each((key, option) => {
-                if (parseInt($(option).attr('value')) === viewer.viewer) {
-                    $(option).attr('selected', 'selected');
-                }
-            })
-
-            if (index > 0) {
-                clone.find('button').remove();
-                clone.append('<button class="btn btn-danger removeViewer" type="button">-</button>')
-            }
-            container.append(clone);
-        })
-    } else {
-        const clone = viewerItem.clone();
-        clone.removeAttr('id')
-        clone.removeClass('visually-hidden');
-        clone.find('select').attr('name', 'viewers');
-        container.append(clone);
-    }
-}
-
-const toastsBodyClear = ()=>{
+const toastsBodyClear = () => {
     $('#toastDanger').find('.toast-body').html('');
     $('#toastSuccess').find('.toast-body').html('');
 }
 
-$('#photos_card').click('.photo_link', (e) => {
-    const target = $(e.target);
-    let id = 0;
-    if (target.hasClass('photo_link')) {
-        id = parseInt(target.data('id'));
-    } else {
-        id = target.parents('.photo_link').data('id')
-    }
-    let url = '/api/photo/tree?type=my';
-    if (id !== 0 && !isNaN(id)) {
-        url = '/api/photo/tree?type=my&&id=' + id;
-    }
-    $.ajax(url, {
+$('#openCreateCategoryModal').click(() => {
+    $.ajax('/api/photo/category/get', {
         method: 'GET',
         dataType: 'json',
-        success: (data) => {
-            updateBreadCrumb(data[0]);
-            updateTree(data[1], data[2]);
-        }
-    })
-})
-$('#openCreateAlbumModal').click(() => {
-    $.ajax('/api/photo/album/get', {
-        method: 'GET',
-        dataType: 'json',
-        success: (albums) => {
-            const createAlbumForm = $('#createAlbumForm');
-            createAlbumForm.find('#albumName').val('');
-            createAlbumForm.find('#albumDescription').val('');
-            createAlbumForm.find('#albumParent option').remove();
-            createAlbumForm.find('#albumParent').append("<option value='0'>Нет родителя</option>");
-            albums.forEach((album) => {
-                createAlbumForm.find('#albumParent').append("<option value='" + album.id + "'>" + album.name + "</option>");
+        success: (categories) => {
+            const createCategoryForm = $('#createCategoryForm');
+            createCategoryForm.find('#categoryName').val('');
+            createCategoryForm.find('#categoryDescription').val('');
+            createCategoryForm.find('#categoryParent option').remove();
+            createCategoryForm.find('#categoryParent').append("<option value='0'>Нет родителя</option>");
+            categories.forEach((category) => {
+                createCategoryForm.find('#categoryParent').append("<option value='" + category.id + "'>" + category.name + "</option>");
             })
         }
     })
-    createAlbumModalBootstrap.show();
+    createCategoryModalBootstrap.show();
 })
 
-$("#createAlbumSubmit").click(() => {
-    const createAlbumForm = $('#createAlbumForm');
-    const name = createAlbumForm.find('[name="name"]').val();
-    const description = createAlbumForm.find('[name="description"]').val();
-    const parentID = createAlbumForm.find('[name="parent_id"]').val();
+$("#createCategorySubmit").click(() => {
+    const createCategoryForm = $('#createCategoryForm');
+    const name = createCategoryForm.find('[name="name"]').val();
+    const description = createCategoryForm.find('[name="description"]').val();
+    const parentID = createCategoryForm.find('[name="parent_id"]').val();
     const toastDanger = $('#toastDanger');
     if (!$.trim(name).length) {
         toastsBodyClear();
-        toastDanger.find('.toast-body').html('Заполните поле "Название альбома"');
+        toastDanger.find('.toast-body').html('Заполните поле "Название категории"');
         const toast = new bootstrap.Toast(toastDanger, {});
         toast.show();
         return;
     }
 
-    $.ajax('/api/photo/album', {
+    $.ajax('/api/photo/category', {
         method: 'POST',
         dataType: 'json',
         headers: {
@@ -181,7 +79,8 @@ $("#createAlbumSubmit").click(() => {
             toastSuccess.find('.toast-body').html('Альбом успешно добавлен');
             const toast = new bootstrap.Toast(toastSuccess, {});
             toast.show();
-            createAlbumModalBootstrap.hide();
+            createCategoryModalBootstrap.hide();
+            location.reload();
         },
         error: (req) => {
             toastsBodyClear();
@@ -193,18 +92,18 @@ $("#createAlbumSubmit").click(() => {
 })
 
 $('#openCreatePhotoModal').click(() => {
-    $.ajax('/api/photo/album/get', {
+    $.ajax('/api/photo/category/get', {
         method: 'GET',
         dataType: 'json',
-        success: (albums) => {
+        success: (categories) => {
             const createPhotoForm = $('#createPhotoForm');
             createPhotoForm.find('#photoFile').val('');
             createPhotoForm.find('#photoName').val('');
             createPhotoForm.find('#photoDescription').val('');
-            createPhotoForm.find('#photoAlbum option').remove();
-            createPhotoForm.find('#photoAlbum').append("<option value='0'>Нет альбома</option>");
-            albums.forEach((album) => {
-                createPhotoForm.find('#photoAlbum').append("<option value='" + album.id + "'>" + album.name + "</option>");
+            createPhotoForm.find('#photoCategory option').remove();
+            createPhotoForm.find('#photoCategory').append("<option value='0'>Нет категории</option>");
+            categories.forEach((category) => {
+                createPhotoForm.find('#photoCategory').append("<option value='" + category.id + "'>" + category.name + "</option>");
             })
         }
     })
@@ -217,7 +116,7 @@ $("#createPhotoSubmit").click(() => {
     const file = createPhotoForm.find('[name="file"]');
     const name = createPhotoForm.find('[name="name"]').val();
     const description = createPhotoForm.find('[name="description"]').val();
-    const albumID = createPhotoForm.find('[name="albumID"]').val();
+    const categoryID = createPhotoForm.find('[name="categoryID"]').val();
     const toastDanger = $('#toastDanger');
     if (!$.trim(name).length) {
         toastsBodyClear();
@@ -236,7 +135,7 @@ $("#createPhotoSubmit").click(() => {
     formData.append('file', file[0].files[0]);
     formData.append('name', name);
     formData.append('description', description);
-    formData.append('albumID', albumID);
+    formData.append('categoryID', categoryID);
     $.ajax('/api/photo', {
         method: 'POST',
         dataType: 'json',
@@ -260,39 +159,39 @@ $("#createPhotoSubmit").click(() => {
     })
 })
 
-$('#openEditAlbumModal').click(() => {
-    $.ajax('/api/photo/album/get', {
+$('#openEditCategoryModal').click(() => {
+    $.ajax('/api/photo/category/get', {
         method: 'GET',
         dataType: 'json',
-        success: (albums) => {
-            const editAlbumForm = $('#editAlbumForm');
-            editAlbumForm.find('#albumParent option').remove();
-            editAlbumForm.find('#albumParent').append("<option value='0'>Нет родителя</option>");
-            albums.forEach((album) => {
-                editAlbumForm.find('#albumParent').append("<option value='" + album.id + "'>" + album.name + "</option>");
+        success: (categories) => {
+            const editCategoryForm = $('#editCategoryForm');
+            editCategoryForm.find('#categoryParent option').remove();
+            editCategoryForm.find('#categoryParent').append("<option value='0'>Нет родителя</option>");
+            categories.forEach((category) => {
+                editCategoryForm.find('#categoryParent').append("<option value='" + category.id + "'>" + category.name + "</option>");
             })
         }
     })
-    editAlbumModalBootstrap.show();
+    editCategoryModalBootstrap.show();
 })
 
-$("#editAlbumSubmit").click(() => {
-    const editAlbumForm = $('#editAlbumForm');
-    const id = editAlbumForm.find('[name="id"]').val();
-    const ownerID = editAlbumForm.find('[name="ownerID"]').val();
-    const name = editAlbumForm.find('[name="name"]').val();
-    const description = editAlbumForm.find('[name="description"]').val();
-    const parentID = editAlbumForm.find('[name="parent_id"]').val();
+$("#editCategorySubmit").click(() => {
+    const editCategoryForm = $('#editCategoryForm');
+    const id = editCategoryForm.find('[name="id"]').val();
+    const ownerID = editCategoryForm.find('[name="ownerID"]').val();
+    const name = editCategoryForm.find('[name="name"]').val();
+    const description = editCategoryForm.find('[name="description"]').val();
+    const parentID = editCategoryForm.find('[name="parent_id"]').val();
     const toastDanger = $('#toastDanger');
     if (!$.trim(name).length) {
         toastsBodyClear();
-        toastDanger.find('.toast-body').html('Заполните поле "Название альбома"');
+        toastDanger.find('.toast-body').html('Заполните поле "Название категории"');
         const toast = new bootstrap.Toast(toastDanger, {});
         toast.show();
         return;
     }
 
-    $.ajax('/api/photo/album/' + id, {
+    $.ajax('/api/photo/category/' + id, {
         method: 'POST',
         dataType: 'json',
         headers: {
@@ -309,17 +208,17 @@ $("#editAlbumSubmit").click(() => {
         success: (req) => {
             toastsBodyClear();
             const toastSuccess = $('#toastSuccess');
-            toastSuccess.find('.toast-body').html('Альбом успешно изменен');
+            toastSuccess.find('.toast-body').html('Категория успешно изменена');
             const toast = new bootstrap.Toast(toastSuccess, {});
             toast.show();
-            $('#albumParentID').val(req.parentID);
+            $('#categoryParentID').val(req.parentID);
             $('#cardParent').html("Родитель: " + req.parentName);
-            $('#albumName').val(req.name);
+            $('#categoryName').val(req.name);
             $('#cardName').html("Название: " + req.name);
-            $('#albumDescription').val(req.description);
+            $('#categoryDescription').val(req.description);
             $('#cardDescription').html("Описание: " + req.description);
             $('#cardDateEdit').html("Изменена: " + req.dateEdit);
-            editAlbumModalBootstrap.hide();
+            editCategoryModalBootstrap.hide();
         },
         error: (req) => {
             toastsBodyClear();
@@ -330,18 +229,18 @@ $("#editAlbumSubmit").click(() => {
     })
 })
 
-$('#openEditPhotoModal').click(() => {
-    $.ajax('/api/photo/album/get', {
+$('.openEditPhotoModal').click(() => {
+    $.ajax('/api/photo/category/get', {
         method: 'GET',
         dataType: 'json',
-        success: (albums) => {
+        success: (categories) => {
             const editPhotoForm = $('#editPhotoForm');
-            const currentAlbumID = editPhotoForm.find('#photoAlbumID').val();
-            editPhotoForm.find('#photoAlbum option').remove();
-            editPhotoForm.find('#photoAlbum').append("<option value='0'>Нет альбома</option>");
-            albums.forEach((album) => {
-                const selected = album.id === parseInt(currentAlbumID) ? 'selected' : '';
-                editPhotoForm.find('#photoAlbum').append("<option value='" + album.id + "'" + selected + ">" + album.name + "</option>");
+            const currentcategoryID = editPhotoForm.find('#photoCategoryID').val();
+            editPhotoForm.find('#photoCategory option').remove();
+            editPhotoForm.find('#photoCategory').append("<option value='0'>Нет категории</option>");
+            categories.forEach((category) => {
+                const selected = category.id === parseInt(currentcategoryID) ? 'selected' : '';
+                editPhotoForm.find('#photoCategory').append("<option value='" + category.id + "'" + selected + ">" + category.name + "</option>");
             })
         }
     })
@@ -356,7 +255,7 @@ $("#editPhotoSubmit").click(() => {
     const file = editPhotoForm.find('[name="file"]');
     const name = editPhotoForm.find('[name="name"]').val();
     const description = editPhotoForm.find('[name="description"]').val();
-    const albumID = editPhotoForm.find('[name="albumID"]').val();
+    const categoryID = editPhotoForm.find('[name="categoryID"]').val();
     const toastDanger = $('#toastDanger');
     if (!$.trim(name).length) {
         toastsBodyClear();
@@ -372,7 +271,7 @@ $("#editPhotoSubmit").click(() => {
     formData.append('ownerID', ownerID);
     formData.append('name', name);
     formData.append('description', description);
-    formData.append('albumID', albumID);
+    formData.append('categoryID', categoryID);
     $.ajax('/api/photo/' + id, {
         method: 'POST',
         dataType: 'json',
@@ -385,8 +284,8 @@ $("#editPhotoSubmit").click(() => {
             toastSuccess.find('.toast-body').html('Фотография успешно изменена');
             const toast = new bootstrap.Toast(toastSuccess, {});
             toast.show();
-            $('#photoAlbumID').val(req.albumID);
-            $('#cardAlbum').html("Альбом: " + req.albumName);
+            $('#photoCategoryID').val(req.categoryID);
+            $('#cardCategory').html("Альбом: " + req.categoryName);
             $('#photoImg').attr("src", req.path);
             $('#cardImg').attr("src", req.path);
             $('#photoName').val(req.name);
@@ -405,108 +304,82 @@ $("#editPhotoSubmit").click(() => {
     })
 })
 
-$('#openEditAlbumViewersModal').click(() => {
-    const albumID = $('#cardId').val();
-    $.ajax('/api/photo/album/' + albumID + '/viewers', {
-        method: 'GET',
-        dataType: 'json',
-        success: (viewers) => {
-            const editAlbumViewersForm = $('#editViewersForm');
-            updateViewers(editAlbumViewersForm, albumID, viewers)
-        }
-    })
-    editAlbumViewersModalBootstrap.show();
-})
+const updateComments = (comments) => {
+    const tempComment = $(`<div class="d-flex flex-start mb-4 photo_comment-item">
+                            <img class="rounded-circle shadow-1-strong me-3"
+                                 src="" alt="avatar" width="65"
+                                 height="65"/>
+                            <div class="card w-100">
+                                <div class="card-body p-4">
+                                    <h5></h5>
+                                    <p class="small"></p>
+                                    <p class="text-comment"></p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <button type="button" data-id=""
+                                                class="removeComment btn btn-outline-danger"><i
+                                                class="fa-solid fa-minus"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>`);
+    const container = $('#photo_comments');
+    container.find('.photo_comment-item').remove();
+    const currentUserID = localStorage.getItem("currentUserID");
+    if (comments.length == 0) {
+        container.append(`<div class="card mb-4 photo_comment-item">
+                                <div class="card-body">
+                                    Пока нет комментариев
+                                </div>
+                            </div>`)
+    } else {
+        comments.forEach((comment) => {
+            const cloneComment = tempComment.clone();
+            cloneComment.find('img').attr('src', comment.user.avatar);
+            cloneComment.find('h5').text(comment.user.fio);
+            cloneComment.find('.small').text(comment.dateAdd);
+            cloneComment.find('.text-comment').text(comment.comment);
+            if (comment.userID !== parseInt(currentUserID)) {
+                cloneComment.find('.removeComment').parent().remove();
+            } else {
+                cloneComment.find('.removeComment').attr('data-id', comment.id);
+            }
+            container.append(cloneComment);
+        })
+    }
+}
 
-$('#viewers_container').on('click', '.addViewer', () => {
-    const container = $('#viewers_container');
-    const clone = $('#editViewersForm').find('#viewer_item_temp').clone();
-    clone.removeAttr('id');
-    clone.removeClass('visually-hidden');
-    clone.find('select').attr('name', 'viewers');
-    clone.find('button').remove();
-    clone.append('<button class="btn btn-danger removeViewer" type="button">-</button>')
-    container.append(clone);
-})
-
-$('#viewers_container').on('click', '.removeViewer', (e) => {
-    const btn = $(e.target);
-    btn.parent().remove();
-})
-
-$('#editAlbumViewersSubmit').click(() => {
-    const form = $('#editViewersForm');
-    const viewers = form.find('[name = "viewers"]');
-    const id = form.find('[name = "id"]').val();
-    const data = [];
-    viewers.each((key, el) => {
-        data.push({
-            "albumID": id,
-            "viewer": $(el).val()
-        });
-    })
-    $.ajax('/api/photo/album/' + id + '/viewers', {
-        method: 'POST',
-        dataType: 'json',
-        headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-        },
-        data: JSON.stringify(data),
-        success: (viewers) => {
-            const editAlbumViewersForm = $('#editViewersForm');
-            updateViewers(editAlbumViewersForm, id, viewers);
-            toastsBodyClear();
-            const toastSuccess = $('#toastSuccess');
-            toastSuccess.find('.toast-body').html('Доступ к альбому изменен');
-            const toast = new bootstrap.Toast(toastSuccess, {});
-            toast.show();
-            editAlbumViewersModalBootstrap.hide();
-        }
-    });
-})
-
-$('#openEditPhotoViewersModal').click(() => {
+$('#addedComment').click(() => {
+    const comment = $('#addComment').val();
     const photoID = $('#cardId').val();
-    $.ajax('/api/photo/' + photoID + '/viewers', {
-        method: 'GET',
-        dataType: 'json',
-        success: (viewers) => {
-            const editPhotoViewersForm = $('#editViewersForm');
-            updateViewers(editPhotoViewersForm, photoID, viewers)
-        }
-    })
-    editPhotoViewersModalBootstrap.show();
-})
-
-$('#editPhotoViewersSubmit').click(() => {
-    const form = $('#editViewersForm');
-    const viewers = form.find('[name = "viewers"]');
-    const id = form.find('[name = "id"]').val();
-    const data = [];
-    viewers.each((key, el) => {
-        data.push({
-            "photoID": id,
-            "viewer": $(el).val()
-        });
-    })
-    $.ajax('/api/photo/' + id + '/viewers', {
+    $.ajax('/api/photo/comment', {
         method: 'POST',
         dataType: 'json',
         headers: {
             'Accept': 'application/json',
             'Content-Type': 'application/json'
         },
-        data: JSON.stringify(data),
-        success: (viewers) => {
-            const editPhotoViewersForm = $('#editViewersForm');
-            updateViewers(editPhotoViewersForm, id, viewers);
-            toastsBodyClear();
-            const toastSuccess = $('#toastSuccess');
-            toastSuccess.find('.toast-body').html('Доступ к фотографии изменен');
-            const toast = new bootstrap.Toast(toastSuccess, {});
-            toast.show();
-            editPhotoViewersModalBootstrap.hide();
+        data: JSON.stringify({
+            photoID,
+            comment
+        }),
+        success: (data) => {
+            updateComments(data);
+            $('#addComment').val('');
         }
-    });
+    })
+})
+
+$('#photo_comments').click('.removeComment', (e) => {
+    let commentID = $(e.target).attr("data-id");
+    if (!parseInt(commentID)) {
+        commentID = $(e.target).parent().attr("data-id");
+    }
+    const photoID = $('#cardId').val();
+    $.ajax('/api/photo/' + photoID + '/comment/' + commentID, {
+        method: 'GET',
+        dataType: 'json',
+        success: (data) => {
+            updateComments(data);
+        }
+    })
 })

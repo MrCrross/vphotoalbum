@@ -2,9 +2,22 @@
     --blue-400-rgb: #9dabfb;
 }
 
-.bg-blue-400{
+.bg-blue-400 {
     background-color: rgba(var(--blue-400-rgb));
 }
-.cursor-pointer{
+
+.cursor-pointer {
     cursor: pointer;
+}
+
+@media (min-width: 992px) {
+    .col-lg-2_5 {
+        flex: 0 0 auto;
+        width: 20%
+    }
+
+    .col-lg-9_5 {
+        flex: 0 0 auto;
+        width: 80%
+    }
 }

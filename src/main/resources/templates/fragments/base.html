@@ -48,8 +48,8 @@
                             </a>
                             <ul class="dropdown-menu">
                                 <li><a class="dropdown-item" th:href="@{/account}">Личный кабинет</a></li>
-                                <li><a class="dropdown-item" th:href="@{/photo}">Личный фотоальбом</a></li>
-                                <li><a class="dropdown-item" th:href="@{/photo/viewer}">Доступные фотоальбомы</a></li>
+                                <li><a class="dropdown-item" th:href="@{/photo}">Личные фотографии</a></li>
+                                <li th:if="${session.user.params.contains('category_changed')}"><a class="dropdown-item" th:href="@{/photo/category}">Категории</a></li>
                                 <li th:if="${session.user.params.contains('role_viewer')}"><a class="dropdown-item" th:href="@{/role}">Роли</a></li>
                                 <li th:if="${session.user.params.contains('user_viewer')}"><a class="dropdown-item" th:href="@{/user}">Пользователи</a></li>
                             </ul>
@@ -69,7 +69,7 @@
         </div>
     </nav>
 </header>
-<div th:insert="${content}" class="container">
+<div th:insert="${content}">
 
 </div>
 <footer></footer>
@@ -78,6 +78,9 @@
 <script th:src="@{/js/main.js}"></script>
 <script th:if="${session.user != null}">
     localStorage.setItem("currentUserID", $('#currentUserID').val());
+</script>
+<script th:if="${session.user == null}">
+    localStorage.removeItem("currentUserID");
 </script>
 <script th:replace="${scripts}"></script>
 </body>

@@ -62,7 +62,7 @@ CREATE TABLE IF NOT EXISTS `users_roles_params` (
     FOREIGN KEY (`param_id`) REFERENCES `users_params` (`id`)
 );
 
-CREATE TABLE IF NOT EXISTS `photos_albums` (
+CREATE TABLE IF NOT EXISTS `photos_categories` (
   `id` int PRIMARY KEY NOT NULL AUTO_INCREMENT,
   `name` varchar(255) NOT NULL UNIQUE,
   `description` text NULL,
@@ -71,7 +71,7 @@ CREATE TABLE IF NOT EXISTS `photos_albums` (
   `date_add` datetime NOT NULL,
   `date_edit` datetime,
   `date_delete` datetime,
-    FOREIGN KEY (`parent_id`) REFERENCES `photos_albums` (`id`),
+    FOREIGN KEY (`parent_id`) REFERENCES `photos_categories` (`id`),
     FOREIGN KEY (`owner_id`) REFERENCES `users` (`id`)
 );
 
@@ -80,27 +80,38 @@ CREATE TABLE IF NOT EXISTS `photos` (
   `name` varchar(255) NOT NULL UNIQUE,
   `path` varchar(255) NOT NULL,
   `description` text NULL,
-  `album_id` int,
+  `category_id` int,
   `owner_id` int NOT NULL,
   `date_add` datetime NOT NULL,
   `date_edit` datetime,
   `date_delete` datetime,
-    FOREIGN KEY (`album_id`) REFERENCES `photos_albums` (`id`),
+    FOREIGN KEY (`category_id`) REFERENCES `photos_categories` (`id`),
     FOREIGN KEY (`owner_id`) REFERENCES `users` (`id`)
 );
 
-CREATE TABLE IF NOT EXISTS `photos_albums_viewers` (
-  `album_id` int NOT NULL,
-  `user_id` int NOT NULL,
-  PRIMARY KEY (`user_id`, `album_id`),
-    FOREIGN KEY (`album_id`) REFERENCES `photos_albums` (`id`),
-    FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
+CREATE TABLE IF NOT EXISTS photos_comments
+(
+    id       int auto_increment,
+    photo_id int       not null,
+    user_id  int       not null,
+    comment  TEXT      not null,
+    date_add timestamp not null,
+    constraint photos_comments_pk
+        primary key (id),
+    constraint photos_comments_photos_id_fk
+        foreign key (photo_id) references photos (id),
+    constraint photos_comments_users_id_fk
+        foreign key (user_id) references users (id)
 );
 
-CREATE TABLE IF NOT EXISTS `photos_viewers` (
-  `photo_id` int NOT NULL,
-  `user_id` int NOT NULL,
-  PRIMARY KEY (`user_id`, `photo_id`),
-    FOREIGN KEY (`photo_id`) REFERENCES `photos` (`id`),
-    FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
+CREATE TABLE IF NOT EXISTS history_actions
+(
+    id       int auto_increment,
+    user_id  int          not null,
+    path     varchar(255) not null,
+    date_add timestamp    not null,
+    constraint history_actions_pk
+        primary key (id),
+    constraint history_actions_users_id_fk
+        foreign key (user_id) references users (id)
 );

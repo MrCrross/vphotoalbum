@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en"
+      th:replace="~{fragments/base :: base_layout(~{::title}, ~{::section},~{::script})}"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Фотография</title>
+</head>
+<body>
+<section>
+    <div class="container my-2">
+        <div class="card" th:object="${category}">
+            <div class="card-body">
+                <input type="text" id="cardId" th:value="${category.getId()}" name="id" hidden>
+                <h5 class="card-title" id="cardName" th:text="${'Название:' + category.getName()}">category name</h5>
+                <h5 class="card-title" id="cardParent" th:if="${category.getParentID() != 0}"
+                    th:text="${'Родитель: ' + category.getParent().getName()}">Parent category name</h5>
+                <h5 class="card-title" id="cardParent" th:if="${category.getParentID() == 0}">Родитель: </h5>
+                <p class="card-text" id="cardDescription" th:text="${'Описание: ' + category.getDescription()}">category description</p>
+                <p class="card-text" th:text="${'Добавил: ' + category.getOwner().getFio()}">category owner fio</p>
+                <p class="card-text" th:text="${'Добавлена: ' + category.getDateAdd()}">category dateAdd</p>
+                <p class="card-text" id="cardDateEdit" th:text="${'Изменена: ' + category.getDateEdit()}">Photo dateEdit</p>
+                <a type="button" id="openEditCategoryModal" th:if="${session.user != null && session.user.params.contains('category_changed')}" class="btn btn-primary">Редактировать</a>
+                <a type="button" data-bs-toggle="modal"
+                   data-bs-target="#deleteCategory"
+                   th:if="${session.user != null && session.user.params.contains('category_deleted')}"
+                   th:attr="data-modal-delete = @{/photo/category/{id}/delete(id = ${category.getId()})}"
+                   class="btn btn-danger">Удалить</a>
+            </div>
+        </div>
+        <div class="modal fade" id="editCategoryModal" th:if="${session.user != null && session.user.params.contains('category_changed')}" tabindex="-1" aria-labelledby="editCategoryLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="editCategoryLabel">Редактирование альбом</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="editCategoryForm" th:object="${category}">
+                            <input type="text" name="id" id="categoryID" th:value="${category.getId()}" hidden>
+                            <input type="text" id="categoryParentID" th:value="${category.getParentID()}" hidden>
+                            <input type="text" name="ownerID" id="categoryOwnerID" th:value="${category.getOwnerID()}" hidden>
+                            <div class="mb-3">
+                                <label for="categoryName" class="form-label">Название</label>
+                                <input type="text" class="form-control" name="name" id="categoryName"
+                                       placeholder="Название" th:value="${category.getName()}">
+                            </div>
+                            <div class="mb-3">
+                                <label for="categoryParent" class="form-label">Родитель</label>
+                                <select class="form-select" name="parentID" id="categoryParent"></select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="categoryDescription" class="form-label">Описание</label>
+                                <textarea class="form-control" name="description" id="categoryDescription"
+                                          placeholder="Описание" cols="30"
+                                          rows="10" th:text="${category.getDescription()}"></textarea>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                        <button id="editCategorySubmit" type="button" class="btn btn-primary">Добавить</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal fade" id="deleteCategory" th:if="${session.user != null && session.user.params.contains('category_deleted')}" tabindex="-1" aria-labelledby="deleteCategoryLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="deleteCategoryLabel">Удаление категории</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                        <button class="btn btn-danger" data-href="">Удалить</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div th:replace="~{fragments/toasters}"></div>
+    </div>
+</section>
+<script th:src="@{/js/photoActions.js}"></script>
+</body>
+</html>

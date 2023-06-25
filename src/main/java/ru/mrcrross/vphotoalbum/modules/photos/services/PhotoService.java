@@ -3,9 +3,9 @@ package ru.mrcrross.vphotoalbum.modules.photos.services;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import ru.mrcrross.vphotoalbum.models.Photo;
-import ru.mrcrross.vphotoalbum.models.PhotoViewer;
+import ru.mrcrross.vphotoalbum.models.PhotoComment;
 import ru.mrcrross.vphotoalbum.models.User;
-import ru.mrcrross.vphotoalbum.modules.photos.repositories.PhotoAlbumRepository;
+import ru.mrcrross.vphotoalbum.modules.photos.repositories.PhotoCategoryRepository;
 import ru.mrcrross.vphotoalbum.modules.photos.repositories.PhotoRepository;
 import ru.mrcrross.vphotoalbum.modules.user.repositories.UserRepository;
 
@@ -16,37 +16,48 @@ import java.util.*;
 @Component
 public class PhotoService {
     private final PhotoRepository photoRepository;
-    private final PhotoAlbumRepository albumRepository;
+    private final PhotoCategoryRepository categoryRepository;
     private final UserRepository userRepository;
+    private int limitPage = 16;
 
     @Autowired
-    public PhotoService(PhotoRepository photoRepository, PhotoAlbumRepository albumRepository, UserRepository userRepository)
+    public PhotoService(PhotoRepository photoRepository, PhotoCategoryRepository categoryRepository, UserRepository userRepository)
     {
         this.photoRepository = photoRepository;
-        this.albumRepository = albumRepository;
+        this.categoryRepository = categoryRepository;
         this.userRepository = userRepository;
     }
 
     public Photo getByID(Integer id)
     {
         Photo photo = photoRepository.getByID(id);
-        photo.setOwner(userRepository.getByID(photo.getOwnerID()));
-        LocalDateTime dateAdd = LocalDateTime.parse(photo.getDateAdd(), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-        LocalDateTime dateEdit = LocalDateTime.parse(photo.getDateEdit(), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-        photo.setDateAdd(dateAdd.format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss")));
-        photo.setDateEdit(dateEdit.format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss")));
-        if (photo.getAlbumID() != 0) {
-            photo.setAlbum(albumRepository.getByID(photo.getAlbumID()));
-        }
+        photo.setComments(photoRepository.getCommentsByPhotoID(id));
         return photo;
+    }
+
+    public List<Photo> getPage(Integer page, List<Integer> categories, String search, Integer owner) {
+        int limit = this.limitPage;
+        int offset = 0;
+        if (page != null && page > 1) {
+            limit = this.limitPage * page;
+            offset = this.limitPage * (page - 1);
+        }
+        search = "%" + search.trim() + "%";
+        return photoRepository.getPage(categories, search, owner, limit, offset);
+    }
+
+    public int countPage(List<Integer> categories, String search, Integer owner)
+    {
+        search = "%" + search.trim() + "%";
+        return photoRepository.getCountPage(categories, search, owner, this.limitPage);
     }
 
     public int add(Photo photo)
     {
         photo.setDateAdd(LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
         photo.setPath("");
-        Object albumID = photo.getAlbumID();
-        if (photo.getAlbumID() == 0) {
+        Object albumID = photo.getCategoryID();
+        if (photo.getCategoryID() == 0) {
             albumID = null;
         }
         return photoRepository.add(photo, albumID);
@@ -67,18 +78,6 @@ public class PhotoService {
         photoRepository.update(id, fields);
     }
 
-    public List<PhotoViewer> getViewers(Integer id)
-    {
-        return photoRepository.getViewers(id);
-    }
-
-    public void updateViewers(Integer photoID, List<PhotoViewer> viewers) {
-        photoRepository.deleteViewers(photoID);
-        for (PhotoViewer viewer : viewers) {
-            photoRepository.addViewer(viewer);
-        }
-    }
-
     public Boolean checkOwner(Integer photoID, User currentUser)
     {
         int userID = currentUser.getId();
@@ -89,14 +88,13 @@ public class PhotoService {
         return false;
     }
 
-    public Boolean checkViewer(Integer photoID, User currentUser)
-    {
-        Integer userID = currentUser.getId();
-        PhotoViewer viewer = photoRepository.getViewer(photoID, userID);
-        if (viewer != null) {
-            return true;
-        }
-        return false;
+    public void addComment(PhotoComment comment) {
+        comment.setDateAdd(LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+        photoRepository.addComment(comment);
+    }
+
+    public void deleteComment(Integer commentID) {
+        photoRepository.deleteComment(commentID);
     }
 
     private List<Map.Entry<String, Object>> getPhotoFields(Photo photo) {
@@ -110,10 +108,10 @@ public class PhotoService {
         if (photo.getDescription() != null && !photo.getDescription().trim().isEmpty()) {
             map.put("description", photo.getDescription());
         }
-        if (photo.getAlbumID() == 0) {
-            map.put("album_id", "null");
+        if (photo.getCategoryID() == 0) {
+            map.put("category_id", "null");
         } else {
-            map.put("album_id", photo.getAlbumID());
+            map.put("category_id", photo.getCategoryID());
         }
         if (photo.getDateEdit() != null) {
             map.put("date_edit", photo.getDateEdit());

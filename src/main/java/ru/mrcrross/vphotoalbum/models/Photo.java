@@ -3,6 +3,7 @@ package ru.mrcrross.vphotoalbum.models;
 import jakarta.validation.constraints.NotEmpty;
 
 import java.io.Serializable;
+import java.util.List;
 
 public class Photo implements Serializable {
     private int id;
@@ -10,13 +11,15 @@ public class Photo implements Serializable {
     private String name;
     private String path;
     private String description;
-    private int albumID;
+    private int categoryID;
     private int ownerID;
     private String dateAdd;
     private String dateEdit;
     private String dateDelete;
     private User owner;
-    private PhotoAlbum album;
+    private PhotoCategory category;
+
+    private List<PhotoComment> comments;
 
     public int getId() {
         return id;
@@ -42,12 +45,12 @@ public class Photo implements Serializable {
         this.description = description;
     }
 
-    public int getAlbumID() {
-        return albumID;
+    public int getCategoryID() {
+        return categoryID;
     }
 
-    public void setAlbumID(int albumID) {
-        this.albumID = albumID;
+    public void setCategoryID(int categoryID) {
+        this.categoryID = categoryID;
     }
 
     public int getOwnerID() {
@@ -98,11 +101,19 @@ public class Photo implements Serializable {
         this.path = path;
     }
 
-    public PhotoAlbum getAlbum() {
-        return album;
+    public PhotoCategory getCategory() {
+        return category;
     }
 
-    public void setAlbum(PhotoAlbum album) {
-        this.album = album;
+    public void setCategory(PhotoCategory category) {
+        this.category = category;
+    }
+
+    public List<PhotoComment> getComments() {
+        return comments;
+    }
+
+    public void setComments(List<PhotoComment> comments) {
+        this.comments = comments;
     }
 }

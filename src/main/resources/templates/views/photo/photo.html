@@ -13,47 +13,69 @@
             <img th:src="${photo.getPath()}" id="cardImg" class="card-img-top" th:alt="${photo.getName()}">
             <div class="card-body">
                 <h5 class="card-title" id="cardName" th:text="${'Название:' + photo.getName()}">Photo name</h5>
-                <h5 class="card-title" id="cardAlbum" th:if="${photo.getAlbumID() != 0}"
-                    th:text="${'Альбом: ' + photo.getAlbum().getName()}">PhotoAlbum name</h5>
-                <h5 class="card-title" id="cardAlbum" th:if="${photo.getAlbumID() == 0}">Альбом: </h5>
-                <p class="card-text" id="cardDescription" th:text="${'Описание: ' + photo.getDescription()}">Photo description</p>
+                <h5 class="card-title" id="cardAlbum" th:if="${photo.getCategoryID() != 0}"
+                    th:text="${'Категория: ' + photo.getCategory().getName()}">PhotoCategory name</h5>
+                <h5 class="card-title" id="cardAlbum" th:if="${photo.getCategoryID() == 0}">Категория: </h5>
+                <p class="card-text" id="cardDescription" th:text="${'Описание: ' + photo.getDescription()}">Photo
+                    description</p>
                 <p class="card-text" th:text="${'Добавил: ' + photo.getOwner().getFio()}">Photo owner fio</p>
                 <p class="card-text" th:text="${'Добавлена: ' + photo.getDateAdd()}">Photo dateAdd</p>
-                <p class="card-text" id="cardDateEdit" th:text="${'Изменена: ' + photo.getDateEdit()}">Photo dateEdit</p>
-                <a type="button" id="openEditPhotoViewersModal" class="btn btn-primary">Редактировать доступ</a>
-                <a type="button" id="openEditPhotoModal" class="btn btn-primary">Редактировать</a>
+                <p class="card-text" id="cardDateEdit" th:text="${'Изменена: ' + photo.getDateEdit()}">Photo
+                    dateEdit</p>
+                <a type="button" id="openEditPhotoModal"
+                   th:if="${session.user != null && session.user.getId() == photo.getOwnerID()}"
+                   class="btn btn-primary">Редактировать</a>
                 <a type="button" data-bs-toggle="modal"
-                   data-bs-target="#deletePhoto" th:attr="data-modal-delete = @{/photo/{id}/delete(id = ${photo.getId()})}" class="btn btn-danger">Удалить</a>
+                   data-bs-target="#deletePhoto"
+                   th:if="${session.user != null && session.user.getId() == photo.getOwnerID()}"
+                   th:attr="data-modal-delete = @{/photo/{id}/delete(id = ${photo.getId()})}" class="btn btn-danger">Удалить</a>
             </div>
-        </div>
-        <div class="modal fade" id="editPhotoViewersModal" tabindex="-1" aria-labelledby="editPhotoViewersLabel" aria-hidden="true">
-            <div class="modal-dialog modal-lg">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="editPhotoViewersLabel">Редактирование доступ к альбому</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
-                    </div>
-                    <div class="modal-body">
-                        <form id="editViewersForm">
-                            <input type="text" name="id" hidden>
-                            <label class="form-label">Доступ</label>
-                            <div id="viewer_item_temp" class="viewer_item input-group mb-3 visually-hidden">
-                                <select class="form-select">
-                                    <option th:each="user : ${users}" th:value="${user.getId()}" th:text="${user.getFio()}"></option>
-                                </select>
-                                <button class="btn btn-success addViewer" type="button">+</button>
+            <div class="card-footer">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="input-group mb-3" th:if="${session.user != null}">
+                            <div class="form-floating">
+                                <input type="text" id="addComment" class="form-control"
+                                       placeholder="Введите комментарий..." aria-label="Recipient's username"
+                                       aria-describedby="addedComment"/>
+                                <label for="addComment">+ Добавить комментарий</label>
                             </div>
-                            <div id="viewers_container"></div>
-                        </form>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
-                        <button id="editPhotoViewersSubmit" type="button" class="btn btn-primary">Изменить</button>
+                            <button class="btn btn-outline-secondary" type="button"
+                                    id="addedComment">Добавить
+                            </button>
+                        </div>
+                        <div id="photo_comments">
+                            <div class="d-flex flex-start mb-4 photo_comment-item" th:each="comment : ${photo.getComments()}">
+                                <img class="rounded-circle shadow-1-strong me-3"
+                                     th:src="${comment.getUser().getAvatar()}" alt="avatar" width="65"
+                                     height="65"/>
+                                <div class="card w-100">
+                                    <div class="card-body p-4">
+                                        <h5 th:text="${comment.getUser().getFio()}">Johny Cash</h5>
+                                        <p class="small" th:text="${comment.getDateAdd()}">3 hours ago</p>
+                                        <p th:text="${comment.getComment()}">Comment</p>
+                                        <div class="d-flex justify-content-between align-items-center"
+                                             th:if="${session.user != null && comment.getUserID() == session.user.getId()}">
+                                            <button type="button" th:attr="data-id=${comment.getId()}"
+                                                    class="removeComment btn btn-outline-danger"><i
+                                                    class="fa-solid fa-minus"></i></button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card mb-4 photo_comment-item" th:if="${photo.getComments().size() == 0}">
+                                <div class="card-body">
+                                    Пока нет комментариев
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="modal fade" id="editPhotoModal" tabindex="-1" aria-labelledby="editPhotoLabel" aria-hidden="true">
+        <div class="modal fade" id="editPhotoModal"
+             th:if="${session.user != null && session.user.getId() == photo.getOwnerID()}" tabindex="-1"
+             aria-labelledby="editPhotoLabel" aria-hidden="true">
             <div class="modal-dialog modal-lg">
                 <div class="modal-content">
                     <div class="modal-header">
@@ -64,9 +86,11 @@
                         <form id="editPhotoForm" enctype="multipart/form-data" th:object="${photo}">
                             <div class="mb-3">
                                 <input type="text" name="id" id="photoID" th:value="${photo.getId()}" hidden>
-                                <input type="text" id="photoAlbumID" th:value="${photo.getAlbumID()}" hidden>
-                                <input type="text" name="ownerID" id="photoOwnerID" th:value="${photo.getOwnerID()}" hidden>
-                                <img th:src="${photo.getPath()}" id="photoImg" class="card-img-top" th:alt="${photo.getName()}">
+                                <input type="text" id="photoAlbumID" th:value="${photo.getCategoryID()}" hidden>
+                                <input type="text" name="ownerID" id="photoOwnerID" th:value="${photo.getOwnerID()}"
+                                       hidden>
+                                <img th:src="${photo.getPath()}" id="photoImg" class="card-img-top"
+                                     th:alt="${photo.getName()}">
                                 <label for="photoFile" class="form-label">Фотография</label>
                                 <input type="file" class="form-control" name="file" id="photoFile"
                                        placeholder="Фотография" accept="image/*">
@@ -95,7 +119,9 @@
                 </div>
             </div>
         </div>
-        <div class="modal fade" id="deletePhoto" tabindex="-1" aria-labelledby="deletePhotoLabel" aria-hidden="true">
+        <div class="modal fade" id="deletePhoto"
+             th:if="${session.user != null && session.user.getId() == photo.getOwnerID()}" tabindex="-1"
+             aria-labelledby="deletePhotoLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
                     <div class="modal-header">

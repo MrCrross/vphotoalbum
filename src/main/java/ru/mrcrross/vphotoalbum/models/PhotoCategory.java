@@ -3,8 +3,9 @@ package ru.mrcrross.vphotoalbum.models;
 import jakarta.validation.constraints.NotEmpty;
 
 import java.io.Serializable;
+import java.util.List;
 
-public class PhotoAlbum implements Serializable {
+public class PhotoCategory implements Serializable {
     private int id;
     @NotEmpty(message = "Название должно быть заполнено")
     private String name;
@@ -15,8 +16,9 @@ public class PhotoAlbum implements Serializable {
     private String dateEdit;
     private String dateDelete;
     private User owner;
+    private PhotoCategory parent;
 
-    private PhotoAlbum parent;
+    private List<PhotoCategory> children;
 
     public int getId() {
         return id;
@@ -90,11 +92,19 @@ public class PhotoAlbum implements Serializable {
         this.owner = owner;
     }
 
-    public PhotoAlbum getParent() {
+    public PhotoCategory getParent() {
         return parent;
     }
 
-    public void setParent(PhotoAlbum parent) {
+    public void setParent(PhotoCategory parent) {
         this.parent = parent;
+    }
+
+    public List<PhotoCategory> getChildren() {
+        return children;
+    }
+
+    public void setChildren(List<PhotoCategory> children) {
+        this.children = children;
     }
 }

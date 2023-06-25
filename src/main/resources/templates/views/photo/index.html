@@ -3,60 +3,52 @@
       th:replace="~{fragments/base :: base_layout(~{::title}, ~{::section},~{::script})}"
       xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Фотоальбомы</title>
+    <title>Личные фотографии</title>
 </head>
 <body>
-<section>
-    <div id="photos_card" class="card my-2">
+<section class="container-fluid d-flex flex-column m-2">
+    <div class="card my-2">
         <div class="card-header">
             <div class="d-flex flex-row align-items-center justify-content-between">
                 <h4 class="h4">
-                    Личные фотоальбомы
+                    Личные фотографии
                 </h4>
                 <div class="">
-                    <button class="btn btn-primary me-2" id="openCreateAlbumModal" type="button">Добавить Альбом
-                    </button>
                     <button class="btn btn-primary" id="openCreatePhotoModal" type="button">Добавить фотографию</button>
                 </div>
             </div>
-            <nav aria-label="breadcrumb">
-                <ol id="breadcrumb" class="breadcrumb">
-                    <li class="breadcrumb-item"><a class="photo_link" data-id="0" type="button">Фотоальбомы</a></li>
-                </ol>
-            </nav>
         </div>
-        <ul id="photos_tree" class="list-group list-group-flush">
-        </ul>
     </div>
+    <div class="row">
+        <div class="col-md-3 col-lg-2_5"></div>
+        <div class="col-md-9 col-xl-9_5">
+            <div class="input-group mb-3 ps-md-2">
+                <input type="text" class="form-control" name="search" placeholder="Поиск..." aria-label="Поиск..."
+                       aria-describedby="photoSearch">
+                <button class="btn btn-outline-secondary" type="button" id="photoSearch"><i
+                        class="fa-solid fa-search"></i></button>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div id="category_tree" class="col-md-3 col-lg-2_5 border border-dark rounded pt-2"></div>
+        <div class="col-md-9 col-lg-9_5">
+            <nav class="container-fluid ps-md-2" aria-label="Пример навигации по страницам">
+                <ul id="pagination" class="pagination"></ul>
+            </nav>
+            <div id="photoCards" class="row ps-md-2">
 
-    <div class="modal fade" id="createAlbumModal" tabindex="-1" aria-labelledby="createAlbumLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="fullImgModal" tabindex="-1" aria-labelledby="fullImgModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="createAlbumLabel">Добавление альбома</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form id="createAlbumForm">
-                        <div class="mb-3">
-                            <label for="albumName" class="form-label">Название альбома</label>
-                            <input type="text" class="form-control" name="name" id="albumName" placeholder="Название">
-                        </div>
-                        <div class="mb-3">
-                            <label for="albumParent" class="form-label">Родитель</label>
-                            <select class="form-select" name="parent_id" id="albumParent"></select>
-                        </div>
-                        <div class="mb-3">
-                            <label for="albumDescription" class="form-label">Описание</label>
-                            <textarea class="form-control" name="description" id="albumDescription"
-                                      placeholder="Описание" cols="30"
-                                      rows="10"></textarea>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
-                    <button id="createAlbumSubmit" type="button" class="btn btn-primary">Добавить</button>
+                    <img src="" class="img-fluid" alt="">
                 </div>
             </div>
         </div>
@@ -79,8 +71,8 @@
                             <input type="text" class="form-control" name="name" id="photoName" placeholder="Название">
                         </div>
                         <div class="mb-3">
-                            <label for="photoAlbum" class="form-label">Альбом</label>
-                            <select class="form-select" name="albumID" id="photoAlbum"></select>
+                            <label for="photoCategory" class="form-label">Категория</label>
+                            <select class="form-select" name="categoryID" id="photoCategory"></select>
                         </div>
                         <div class="mb-3">
                             <label for="photoDescription" class="form-label">Описание</label>
@@ -99,18 +91,8 @@
     </div>
     <div th:replace="~{fragments/toasters}"></div>
 </section>
+<script th:src="@{/js/bstreeview.min.js}"></script>
+<script th:src="@{/js/photoMyPages.js}"></script>
 <script th:src="@{/js/photoActions.js}"></script>
-<script>
-    $('document').ready(() => {
-        $.ajax('/api/photo/tree?type=my', {
-            method: 'GET',
-            dataType: 'json',
-            success: (data) => {
-                updateBreadCrumb(data[0]);
-                updateTree(data[1], data[2]);
-            }
-        })
-    })
-</script>
 </body>
 </html>

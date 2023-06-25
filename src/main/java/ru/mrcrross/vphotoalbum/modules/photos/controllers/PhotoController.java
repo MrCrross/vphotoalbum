@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import ru.mrcrross.vphotoalbum.models.User;
-import ru.mrcrross.vphotoalbum.modules.photos.services.PhotoAlbumService;
+import ru.mrcrross.vphotoalbum.modules.photos.services.PhotoCategoryService;
 import ru.mrcrross.vphotoalbum.modules.photos.services.PhotoService;
 import ru.mrcrross.vphotoalbum.modules.user.services.UserService;
 import ru.mrcrross.vphotoalbum.wrappers.ControllerWrapper;
@@ -16,21 +16,30 @@ import ru.mrcrross.vphotoalbum.wrappers.ControllerWrapper;
 @RequestMapping(path = "/photo")
 public class PhotoController extends ControllerWrapper {
     private final PhotoService photoService;
-    private final PhotoAlbumService albumService;
+    private final PhotoCategoryService categoryService;
     private final UserService userService;
 
-    public PhotoController(PhotoService photoService, PhotoAlbumService albumService, UserService userService)
+    public PhotoController(PhotoService photoService, PhotoCategoryService categoryService, UserService userService)
     {
         this.photoService = photoService;
-        this.albumService = albumService;
+        this.categoryService = categoryService;
         this.userService = userService;
     }
     @GetMapping("")
     public String index(HttpSession session) {
         if (this.loginControl(session)) {
-            return "redirect:/";
+            return "redirect:/login";
         }
         return "views/photo/index";
+    }
+
+    @GetMapping("category")
+    public String indexCategory(Model model, HttpSession session) {
+        if (this.paramsControl(session, "category_changed")) {
+            return "redirect:/";
+        }
+        model.addAttribute("categories", categoryService.getAll());
+        return "views/photo/category/index";
     }
 
     @GetMapping("{id}")
@@ -39,32 +48,25 @@ public class PhotoController extends ControllerWrapper {
             Model model,
             HttpSession session
     ) {
-        if (this.loginControl(session)) {
-            return "redirect:/";
-        }
-        if (photoService.checkViewer(id, (User)session.getAttribute("user"))) {
-            return "redirect:/";
-        }
         model.addAttribute("photo", photoService.getByID(id));
-        model.addAttribute("users", userService.getAll());
+        if (!this.loginControl(session)) {
+            model.addAttribute("users", userService.getAll());
+        }
         return "views/photo/photo";
     }
 
-    @GetMapping("album/{id}")
-    public String showAlbum(
+    @GetMapping("category/{id}")
+    public String showCategory(
             @PathVariable("id") int id,
             Model model,
             HttpSession session
     ) {
         if (this.loginControl(session)) {
-            return "redirect:/";
+            return "redirect:/login";
         }
-        if (albumService.checkViewer(id, (User)session.getAttribute("user"))) {
-            return "redirect:/";
-        }
-        model.addAttribute("album", albumService.getByID(id));
+        model.addAttribute("category", categoryService.getByID(id));
         model.addAttribute("users", userService.getAll());
-        return "views/photo/album";
+        return "views/photo/category";
     }
 
     @GetMapping(path = "{id}/delete")
@@ -73,7 +75,7 @@ public class PhotoController extends ControllerWrapper {
             HttpSession session
     ) {
         if (this.loginControl(session)) {
-            return "redirect:/";
+            return "redirect:/login";
         }
         if (photoService.checkOwner(id, (User)session.getAttribute("user"))) {
             return "redirect:/";
@@ -82,28 +84,15 @@ public class PhotoController extends ControllerWrapper {
         return "redirect:/photo";
     }
 
-    @GetMapping(path = "album/{id}/delete")
-    public String deleteAlbum(
+    @GetMapping(path = "category/{id}/delete")
+    public String deleteCategory(
             @PathVariable("id") int id,
             HttpSession session
     ) {
-        if (this.loginControl(session)) {
+        if (this.paramsControl(session, "category_deleted")) {
             return "redirect:/";
         }
-        if (albumService.checkOwner(id, (User)session.getAttribute("user"))) {
-            return "redirect:/";
-        }
-        albumService.delete(id);
+        categoryService.delete(id);
         return "redirect:/photo";
-    }
-
-    @GetMapping(path = "viewer")
-    public String getViewerAlbums(
-            HttpSession session
-    ) {
-        if (this.loginControl(session)) {
-            return "redirect:/";
-        }
-        return "views/photo/viewer";
     }
 }
