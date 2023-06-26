@@ -2,7 +2,7 @@ package ru.mrcrross.vphotoalbum.models;
 
 import java.io.Serializable;
 
-public class Permission implements Serializable  {
+public class Permission implements Serializable {
     private int id;
     private String techName;
     private String name;

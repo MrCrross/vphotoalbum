@@ -2,6 +2,8 @@ package ru.mrcrross.vphotoalbum.modules.user.controllers;
 
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
+import org.springframework.core.env.Environment;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -27,7 +29,8 @@ public class UserAccountController extends ControllerWrapper {
     private final AuthService authService;
     private final String success = "Данные сохранены";
 
-    public UserAccountController(UserService userService, RoleService roleService, UserAvatarService userAvatarService, AuthService authService){
+    public UserAccountController(JdbcTemplate db, Environment env, UserService userService, RoleService roleService, UserAvatarService userAvatarService, AuthService authService){
+        super(db, env);
         this.userService = userService;
         this.roleService = roleService;
         this.userAvatarService = userAvatarService;
@@ -53,6 +56,7 @@ public class UserAccountController extends ControllerWrapper {
         if (success != null) {
             model.addAttribute("success", this.success);
         }
+        userService.saveUserAction(sessionUser, "GET /account");
         return "views/user/account";
     }
 
@@ -88,6 +92,7 @@ public class UserAccountController extends ControllerWrapper {
             session.removeAttribute("user");
             session.setAttribute("user", authService.getUserSession(id));
         }
+        userService.saveUserAction(sessionUser, "POST /account");
         return "redirect:/account?success=1";
     }
 }

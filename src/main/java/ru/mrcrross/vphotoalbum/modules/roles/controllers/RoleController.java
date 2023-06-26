@@ -3,11 +3,14 @@ package ru.mrcrross.vphotoalbum.modules.roles.controllers;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import ru.mrcrross.vphotoalbum.models.Role;
+import ru.mrcrross.vphotoalbum.models.User;
 import ru.mrcrross.vphotoalbum.modules.permissions.services.PermissionService;
 import ru.mrcrross.vphotoalbum.modules.roles.services.RoleService;
 import ru.mrcrross.vphotoalbum.wrappers.ControllerWrapper;
@@ -19,8 +22,9 @@ public class RoleController extends ControllerWrapper {
     private final PermissionService permissionService;
 
     @Autowired
-    public RoleController(RoleService roleService, PermissionService permissionService)
+    public RoleController(JdbcTemplate db, Environment env, RoleService roleService, PermissionService permissionService)
     {
+        super(db, env);
         this.roleService = roleService;
         this.permissionService = permissionService;
     }
@@ -32,6 +36,7 @@ public class RoleController extends ControllerWrapper {
             return "redirect:/";
         }
         model.addAttribute("roles", roleService.getAll());
+        this.saveUserAction((User) session.getAttribute("user"), "GET /role");
         return "views/role/index";
     }
 
@@ -44,6 +49,7 @@ public class RoleController extends ControllerWrapper {
         Role role = roleService.getOne(id);
         model.addAttribute("role", role);
         model.addAttribute("params", permissionService.getByIds(role.getParams()));
+        this.saveUserAction((User) session.getAttribute("user"), "GET /role/" + id);
         return "views/role/show";
     }
 
@@ -58,6 +64,7 @@ public class RoleController extends ControllerWrapper {
         if (success != null) {
             model.addAttribute("success", "Роль сохранена успешно");
         }
+        this.saveUserAction((User) session.getAttribute("user"), "GET /role/add");
         return "views/role/add";
     }
 
@@ -72,6 +79,7 @@ public class RoleController extends ControllerWrapper {
         if (success != null) {
             model.addAttribute("success", "Роль сохранена успешно");
         }
+        this.saveUserAction((User) session.getAttribute("user"), "GET /role/" + id + "/edit");
         return "views/role/edit";
     }
 
@@ -86,6 +94,7 @@ public class RoleController extends ControllerWrapper {
             return "views/role/add";
         }
         roleService.add(role);
+        this.saveUserAction((User) session.getAttribute("user"), "POST /role");
         return "redirect:/role/add?success=1";
     }
 
@@ -101,6 +110,7 @@ public class RoleController extends ControllerWrapper {
         }
         roleService.update(id, role);
         model.addAttribute("role", new Role());
+        this.saveUserAction((User) session.getAttribute("user"), "POST /role/" + id);
         return "redirect:/role/" + id + "/edit?success=1";
     }
     @GetMapping("{id}/delete")
@@ -110,6 +120,7 @@ public class RoleController extends ControllerWrapper {
             return "redirect:/";
         }
         roleService.delete(id);
+        this.saveUserAction((User) session.getAttribute("user"), "POST /role/" + id + "/delete");
         return "redirect:/role";
     }
 }

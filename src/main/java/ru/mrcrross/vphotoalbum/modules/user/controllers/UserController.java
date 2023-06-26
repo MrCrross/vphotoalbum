@@ -3,6 +3,8 @@ package ru.mrcrross.vphotoalbum.modules.user.controllers;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -21,7 +23,6 @@ import java.nio.charset.StandardCharsets;
 @Controller
 @RequestMapping(path = "/user")
 public class UserController extends ControllerWrapper {
-
     private final UserService userService;
     private final RoleService roleService;
     private final AuthService authService;
@@ -29,7 +30,8 @@ public class UserController extends ControllerWrapper {
     private final String success = "Пользователь сохранен успешно";
 
     @Autowired
-    public UserController(UserService userService, RoleService roleService, AuthService authService, UserAvatarService userAvatarService) {
+    public UserController(JdbcTemplate db, Environment env, UserService userService, RoleService roleService, AuthService authService, UserAvatarService userAvatarService) {
+        super(db, env);
         this.userService = userService;
         this.roleService = roleService;
         this.authService = authService;
@@ -42,6 +44,7 @@ public class UserController extends ControllerWrapper {
             return "redirect:/";
         }
         model.addAttribute("users", userService.getAll());
+        userService.saveUserAction((User) session.getAttribute("user"), "GET /user");
         return "views/user/index";
     }
 
@@ -52,6 +55,8 @@ public class UserController extends ControllerWrapper {
         }
         model.addAttribute("user", userService.get(id));
         model.addAttribute("roles", userService.getRolesById(id));
+        String path = "GET /user/" + id;
+        userService.saveUserAction((User) session.getAttribute("user"), path);
         return "views/user/show";
     }
 
@@ -73,6 +78,7 @@ public class UserController extends ControllerWrapper {
         if (success != null) {
             model.addAttribute("success", this.success);
         }
+        userService.saveUserAction((User) session.getAttribute("user"), "GET /user/add");
         return "views/user/add";
     }
 
@@ -95,6 +101,8 @@ public class UserController extends ControllerWrapper {
         if (success != null) {
             model.addAttribute("success", this.success);
         }
+        String path = "GET /user/" + id + "/edit";
+        userService.saveUserAction((User) session.getAttribute("user"), path);
         return "views/user/edit";
     }
 
@@ -127,6 +135,7 @@ public class UserController extends ControllerWrapper {
             user.setAvatar(userAvatarService.save(id, avatar));
             userService.update(id, user);
         }
+        userService.saveUserAction((User) session.getAttribute("user"), "POST /user");
         return "redirect:/user/add?success=1";
     }
 
@@ -165,6 +174,8 @@ public class UserController extends ControllerWrapper {
             session.removeAttribute("user");
             session.setAttribute("user", authService.getUserSession(id));
         }
+        String path = "POST /user/" + id;
+        userService.saveUserAction((User) session.getAttribute("user"), path);
         return "redirect:/user/" + id + "/edit?success=1";
     }
 
@@ -174,6 +185,8 @@ public class UserController extends ControllerWrapper {
             return "redirect:/";
         }
         userService.delete(id);
+        String path = "GET /user/" + id + "/delete";
+        userService.saveUserAction((User) session.getAttribute("user"), path);
         return "redirect:/user";
     }
 }

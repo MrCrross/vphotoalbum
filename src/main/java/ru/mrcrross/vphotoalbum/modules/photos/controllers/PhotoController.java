@@ -1,6 +1,8 @@
 package ru.mrcrross.vphotoalbum.modules.photos.controllers;
 
 import jakarta.servlet.http.HttpSession;
+import org.springframework.core.env.Environment;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,8 +21,9 @@ public class PhotoController extends ControllerWrapper {
     private final PhotoCategoryService categoryService;
     private final UserService userService;
 
-    public PhotoController(PhotoService photoService, PhotoCategoryService categoryService, UserService userService)
+    public PhotoController(JdbcTemplate db, Environment env, PhotoService photoService, PhotoCategoryService categoryService, UserService userService)
     {
+        super(db, env);
         this.photoService = photoService;
         this.categoryService = categoryService;
         this.userService = userService;
@@ -30,6 +33,7 @@ public class PhotoController extends ControllerWrapper {
         if (this.loginControl(session)) {
             return "redirect:/login";
         }
+        this.saveUserAction((User) session.getAttribute("user"), "GET /photo");
         return "views/photo/index";
     }
 
@@ -39,6 +43,7 @@ public class PhotoController extends ControllerWrapper {
             return "redirect:/";
         }
         model.addAttribute("categories", categoryService.getAll());
+        this.saveUserAction((User) session.getAttribute("user"), "GET /photo/category");
         return "views/photo/category/index";
     }
 
@@ -52,6 +57,7 @@ public class PhotoController extends ControllerWrapper {
         if (!this.loginControl(session)) {
             model.addAttribute("users", userService.getAll());
         }
+        this.saveUserAction((User) session.getAttribute("user"), "GET /photo/" + id);
         return "views/photo/photo";
     }
 
@@ -66,6 +72,7 @@ public class PhotoController extends ControllerWrapper {
         }
         model.addAttribute("category", categoryService.getByID(id));
         model.addAttribute("users", userService.getAll());
+        this.saveUserAction((User) session.getAttribute("user"), "GET /photo/category/" + id);
         return "views/photo/category";
     }
 
@@ -81,6 +88,7 @@ public class PhotoController extends ControllerWrapper {
             return "redirect:/";
         }
         photoService.delete(id);
+        this.saveUserAction((User) session.getAttribute("user"), "GET /photo/" + id + "/delete");
         return "redirect:/photo";
     }
 
@@ -93,6 +101,7 @@ public class PhotoController extends ControllerWrapper {
             return "redirect:/";
         }
         categoryService.delete(id);
+        this.saveUserAction((User) session.getAttribute("user"), "GET /photo/category/" + id + "/delete");
         return "redirect:/photo";
     }
 }

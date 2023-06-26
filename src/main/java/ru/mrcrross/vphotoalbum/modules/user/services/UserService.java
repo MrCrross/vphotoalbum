@@ -2,6 +2,7 @@ package ru.mrcrross.vphotoalbum.modules.user.services;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import ru.mrcrross.vphotoalbum.models.HistoryAction;
 import ru.mrcrross.vphotoalbum.models.Permission;
 import ru.mrcrross.vphotoalbum.models.Role;
 import ru.mrcrross.vphotoalbum.models.User;
@@ -140,5 +141,14 @@ public class UserService {
         user.setDateDelete(LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
         List<Map.Entry<String, Object>> fields = this.getFields(user);
         userRepository.update(id, fields);
+    }
+
+    public void saveUserAction(User user, String path)
+    {
+        HistoryAction historyAction = new HistoryAction();
+        historyAction.setUserID(user.getId());
+        historyAction.setPath(path);
+        historyAction.setDateAdd(LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+        userRepository.saveAction(historyAction);
     }
 }

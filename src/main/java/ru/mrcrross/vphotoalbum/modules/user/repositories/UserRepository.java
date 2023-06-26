@@ -3,7 +3,9 @@ package ru.mrcrross.vphotoalbum.modules.user.repositories;
 import org.springframework.core.env.Environment;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Component;
+import ru.mrcrross.vphotoalbum.models.HistoryAction;
 import ru.mrcrross.vphotoalbum.models.Role;
 import ru.mrcrross.vphotoalbum.modules.user.mappers.UserMapper;
 import ru.mrcrross.vphotoalbum.modules.user.mappers.UserParamsMapper;
@@ -111,5 +113,16 @@ public class UserRepository extends RepositoryWrapper {
             String sql = updateSQLBuilder("users", "id", userID, fields);
             db.update(sql);
         }
+    }
+
+    public void saveAction(HistoryAction historyAction)
+    {
+        SimpleJdbcInsert jdbcInsert1 = new SimpleJdbcInsert(this.db);
+        jdbcInsert1.withTableName("history_actions").usingGeneratedKeyColumns("id");
+        MapSqlParameterSource history = new MapSqlParameterSource()
+                .addValue("user_id", historyAction.getUserID())
+                .addValue("path", historyAction.getPath())
+                .addValue("date_add", historyAction.getDateAdd());
+        jdbcInsert1.executeAndReturnKey(history);
     }
 }

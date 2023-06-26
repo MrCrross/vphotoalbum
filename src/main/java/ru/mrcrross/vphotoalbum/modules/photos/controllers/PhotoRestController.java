@@ -3,9 +3,11 @@ package ru.mrcrross.vphotoalbum.modules.photos.controllers;
 import jakarta.servlet.http.HttpSession;
 import net.minidev.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import ru.mrcrross.vphotoalbum.models.*;
@@ -28,11 +30,13 @@ public class PhotoRestController extends ControllerWrapper {
 
     @Autowired
     public PhotoRestController(
+            JdbcTemplate db, Environment env,
             PhotoCategoryService photoCategoryService,
             PhotoService photoService,
             PhotoFileService fileService,
             PhotoTreeService treeService
     ) {
+        super(db, env);
         this.photoCategoryService = photoCategoryService;
         this.photoService = photoService;
         this.fileService = fileService;
@@ -67,6 +71,7 @@ public class PhotoRestController extends ControllerWrapper {
         response.add(breadCrumb);
         response.add(tree);
         response.add(users);
+        this.saveUserAction(currentUser, "GET /photo/tree");
         return new ResponseEntity<Object>(response, HttpStatus.OK);
     }
 
@@ -85,6 +90,7 @@ public class PhotoRestController extends ControllerWrapper {
         int categoryID = photoCategoryService.add(category);
         JSONObject entity = new JSONObject();
         entity.put("id", categoryID);
+        this.saveUserAction(currentUser, "POST /photo/category");
         return new ResponseEntity<Object>(entity, HttpStatus.OK);
     }
 
@@ -107,6 +113,7 @@ public class PhotoRestController extends ControllerWrapper {
         json.put("name", currentCategory.getName());
         json.put("description", currentCategory.getDescription());
         json.put("dateEdit", currentCategory.getDateEdit());
+        this.saveUserAction((User) session.getAttribute("user"), "POST /photo/category/" + categoryID);
         return new ResponseEntity<Object>(json, HttpStatus.OK);
     }
 
@@ -138,6 +145,7 @@ public class PhotoRestController extends ControllerWrapper {
         int photoID = photoService.add(photo);
         photo.setPath(fileService.save(currentUser.getId(), photoID, file));
         photoService.update(photoID, photo);
+        this.saveUserAction((User) session.getAttribute("user"), "POST /photo");
         return new ResponseEntity<Object>(returns, HttpStatus.OK);
     }
 
@@ -174,6 +182,7 @@ public class PhotoRestController extends ControllerWrapper {
         jsonPhoto.put("name", currentPhoto.getName());
         jsonPhoto.put("description", currentPhoto.getDescription());
         jsonPhoto.put("dateEdit", currentPhoto.getDateEdit());
+        this.saveUserAction((User) session.getAttribute("user"), "POST /photo/" + photoID);
         return new ResponseEntity<Object>(jsonPhoto, HttpStatus.OK);
     }
 
@@ -191,9 +200,9 @@ public class PhotoRestController extends ControllerWrapper {
         }
         comment.setUserID(((User) session.getAttribute("user")).getId());
         photoService.addComment(comment);
+        this.saveUserAction((User) session.getAttribute("user"), "POST /photo/" + photoID + "/comment");
         return new ResponseEntity<Object>(photoService.getByID(photoID).getComments(), HttpStatus.OK);
     }
-
 
     @GetMapping(path = "get")
     public ResponseEntity<Object> getPagePhotos(
@@ -223,6 +232,7 @@ public class PhotoRestController extends ControllerWrapper {
         }
         comment.setUserID(((User) session.getAttribute("user")).getId());
         photoService.addComment(comment);
+        this.saveUserAction((User) session.getAttribute("user"), "POST /photo/" + comment.getPhotoID() + "/comment");
         return new ResponseEntity<Object>(photoService.getByID(comment.getPhotoID()).getComments(), HttpStatus.OK);
     }
 
@@ -239,6 +249,7 @@ public class PhotoRestController extends ControllerWrapper {
             return new ResponseEntity<Object>(error, HttpStatus.UNAUTHORIZED);
         }
         photoService.deleteComment(commentID);
+        this.saveUserAction((User) session.getAttribute("user"), "GET /photo/" + photoID + "/comment/" + commentID);
         return new ResponseEntity<Object>(photoService.getByID(photoID).getComments(), HttpStatus.OK);
     }
 }
