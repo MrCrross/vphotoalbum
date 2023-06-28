@@ -35,10 +35,11 @@ public class RoleService {
         return role;
     }
 
-    public void add(Role role)
+    public int add(Role role)
     {
         int id = roleRepository.add(role);
         roleRepository.updateParams(id, role.getParams());
+        return id;
     }
 
     public void update(int id, Role role)
